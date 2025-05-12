@@ -6,59 +6,135 @@
 {% endblock %}
 
 {% block content %}
-  <form id="myForm" onsubmit="handleSubmit(event)">
-    <!-- QB -->
-    <label for="qbList" class="form-label">QB</label>
-    <div class="dropdown-container">
-      <div id="qbHeader" class="dropdown-header">Select Item</div>
-      <ul id="qbList" class="dropdown-list">
-        <li draggable="true" data-id="qb1">Lamar Jackson</li>
-        <li draggable="true" data-id="qb2">QB 2</li>
-        <li draggable="true" data-id="qb3">QB 3</li>
-      </ul>
-      <input type="hidden" name="qb_order" id="qbInput">
+<button class="btn btn-primary">Offense</button>
+<button class="btn btn-secondary">Defense</button>
+  <div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <h2>Lineup - Offense</h2>
+      <div class="lineup">
+        <!-- QB -->
+        <div class="player-card" style="grid-column: 3; grid-row: 3;">
+          <div class="player-icon"></div>
+          <div class="player-name">QB</div>
+          <div class="player-rating">95</div>
+        </div>
+
+        <!-- RBs -->
+        <div class="player-card" style="grid-column: 2; grid-row: 4;">
+          <div class="player-icon"></div>
+          <div class="player-name">RB1</div>
+          <div class="player-rating">90</div>
+        </div>
+        <div class="player-card" style="grid-column: 4; grid-row: 4;">
+          <div class="player-icon"></div>
+          <div class="player-name">RB2</div>
+          <div class="player-rating">88</div>
+        </div>
+
+        <!-- WRs -->
+        <div class="player-card" style="grid-column: 1; grid-row: 2;">
+          <div class="player-icon"></div>
+          <div class="player-name">WR1</div>
+          <div class="player-rating">92</div>
+        </div>
+        <div class="player-card" style="grid-column: 2; grid-row: 2;">
+          <div class="player-icon"></div>
+          <div class="player-name">WR2</div>
+          <div class="player-rating">89</div>
+        </div>
+        <div class="player-card" style="grid-column: 5; grid-row: 2;">
+          <div class="player-icon"></div>
+          <div class="player-name">WR3</div>
+          <div class="player-rating">87</div>
+        </div>
+
+        <!-- OL -->
+        <div class="player-card" style="grid-column: 1; grid-row: 1;">
+          <div class="player-icon"></div>
+          <div class="player-name">OL1</div>
+          <div class="player-rating">85</div>
+        </div>
+        <div class="player-card" style="grid-column: 2; grid-row: 1;">
+          <div class="player-icon"></div>
+          <div class="player-name">OL2</div>
+          <div class="player-rating">84</div>
+        </div>
+        <div class="player-card" style="grid-column: 3; grid-row: 1;">
+          <div class="player-icon"></div>
+          <div class="player-name">OL3</div>
+          <div class="player-rating">83</div>
+        </div>
+        <div class="player-card" style="grid-column: 4; grid-row: 1;">
+          <div class="player-icon"></div>
+          <div class="player-name">OL4</div>
+          <div class="player-rating">82</div>
+        </div>
+        <div class="player-card" style="grid-column: 5; grid-row: 1;">
+          <div class="player-icon"></div>
+          <div class="player-name">OL5</div>
+          <div class="player-rating">81</div>
+        </div>
+      </div>
     </div>
 
-    <!-- RB -->
-    <label for="rbList" class="form-label">RB</label>
-    <div class="dropdown-container">
-      <div id="rbHeader" class="dropdown-header">Select Item</div>
-      <ul id="rbList" class="dropdown-list">
-        <li draggable="true" data-id="rb1">RB 1</li>
-        <li draggable="true" data-id="rb2">RB 2</li>
-        <li draggable="true" data-id="rb3">RB 3</li>
-      </ul>
-      <input type="hidden" name="rb_order" id="rbInput">
-    </div>
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <h2>Depth Chart - Offense</h2>
+      <form id="myForm" onsubmit="handleSubmit(event)">
+        <!-- QB -->
+        <label for="qbList" class="form-label">QB</label>
+        <div class="dropdown-container">
+          <div id="qbHeader" class="dropdown-header">Select Item</div>
+          <ul id="qbList" class="dropdown-list">
+            <li draggable="true" data-id="qb1">Lamar Jackson</li>
+            <li draggable="true" data-id="qb2">QB 2</li>
+            <li draggable="true" data-id="qb3">QB 3</li>
+          </ul>
+          <input type="hidden" name="qb_order" id="qbInput">
+        </div>
 
-    <!-- WR -->
-    <label for="wrList" class="form-label">WR</label>
-    <div class="dropdown-container">
-      <div id="wrHeader" class="dropdown-header">Select Item</div>
-      <ul id="wrList" class="dropdown-list">
-        <li draggable="true" data-id="wr1">WR 1</li>
-        <li draggable="true" data-id="wr2">WR 2</li>
-        <li draggable="true" data-id="wr3">WR 3</li>
-      </ul>
-      <input type="hidden" name="wr_order" id="wrInput">
-    </div>
+        <!-- RB -->
+        <label for="rbList" class="form-label">RB</label>
+        <div class="dropdown-container">
+          <div id="rbHeader" class="dropdown-header">Select Item</div>
+          <ul id="rbList" class="dropdown-list">
+            <li draggable="true" data-id="rb1">RB 1</li>
+            <li draggable="true" data-id="rb2">RB 2</li>
+            <li draggable="true" data-id="rb3">RB 3</li>
+          </ul>
+          <input type="hidden" name="rb_order" id="rbInput">
+        </div>
 
-    <!-- OL -->
-    <label for="olList" class="form-label">OL</label>
-    <div class="dropdown-container">
-      <div id="olHeader" class="dropdown-header">Select Item</div>
-      <ul id="olList" class="dropdown-list">
-        <li draggable="true" data-id="ol1">OL 1</li>
-        <li draggable="true" data-id="ol2">OL 2</li>
-        <li draggable="true" data-id="ol3">OL 3</li>
-      </ul>
-      <input type="hidden" name="ol_order" id="olInput">
-    </div>
+        <!-- WR -->
+        <label for="wrList" class="form-label">WR</label>
+        <div class="dropdown-container">
+          <div id="wrHeader" class="dropdown-header">Select Item</div>
+          <ul id="wrList" class="dropdown-list">
+            <li draggable="true" data-id="wr1">WR 1</li>
+            <li draggable="true" data-id="wr2">WR 2</li>
+            <li draggable="true" data-id="wr3">WR 3</li>
+          </ul>
+          <input type="hidden" name="wr_order" id="wrInput">
+        </div>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+        <!-- OL -->
+        <label for="olList" class="form-label">OL</label>
+        <div class="dropdown-container">
+          <div id="olHeader" class="dropdown-header">Select Item</div>
+          <ul id="olList" class="dropdown-list">
+            <li draggable="true" data-id="ol1">OL 1</li>
+            <li draggable="true" data-id="ol2">OL 2</li>
+            <li draggable="true" data-id="ol3">OL 3</li>
+          </ul>
+          <input type="hidden" name="ol_order" id="olInput">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
 {% endblock %}
-
 
 {% block scripts %}
   <script src="/static/js/depth_chart.js"></script>
