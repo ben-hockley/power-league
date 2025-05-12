@@ -7,12 +7,12 @@
 
 {% block content %}
 <button class="btn btn-primary">Offense</button>
-<button class="btn btn-secondary">Defense</button>
+<a href="/depth_chart_defense"><button class="btn btn-secondary">Defense</button></a>
   <div class="container">
     <!-- Left Panel -->
     <div class="left-panel">
       <h2>Lineup - Offense</h2>
-      <div class="lineup">
+      <div class="lineup" id="lineup">
         <!-- QB -->
         <div class="player-card" style="grid-column: 3; grid-row: 3;">
           <div class="player-icon"></div>
@@ -87,9 +87,9 @@
         <div class="dropdown-container">
           <div id="qbHeader" class="dropdown-header">Select Item</div>
           <ul id="qbList" class="dropdown-list">
-            <li draggable="true" data-id="qb1">Lamar Jackson</li>
-            <li draggable="true" data-id="qb2">QB 2</li>
-            <li draggable="true" data-id="qb3">QB 3</li>
+            <li draggable="true" data-id="qb1">Josh Allen</li>
+            <li draggable="true" data-id="qb2">Mitch Trubisky</li>
+            <li draggable="true" data-id="qb3">Shane Buechele</li>
           </ul>
           <input type="hidden" name="qb_order" id="qbInput">
         </div>
@@ -99,9 +99,10 @@
         <div class="dropdown-container">
           <div id="rbHeader" class="dropdown-header">Select Item</div>
           <ul id="rbList" class="dropdown-list">
-            <li draggable="true" data-id="rb1">RB 1</li>
-            <li draggable="true" data-id="rb2">RB 2</li>
-            <li draggable="true" data-id="rb3">RB 3</li>
+            <li draggable="true" data-id="rb1">James Cook</li>
+            <li draggable="true" data-id="rb2">Ray Davis</li>
+            <li draggable="true" data-id="rb3">Ty Johnson</li>
+            <li draggable="true" data-id="rb3">Frank Gore Jr.</li>
           </ul>
           <input type="hidden" name="rb_order" id="rbInput">
         </div>
@@ -111,9 +112,11 @@
         <div class="dropdown-container">
           <div id="wrHeader" class="dropdown-header">Select Item</div>
           <ul id="wrList" class="dropdown-list">
-            <li draggable="true" data-id="wr1">WR 1</li>
-            <li draggable="true" data-id="wr2">WR 2</li>
-            <li draggable="true" data-id="wr3">WR 3</li>
+            <li draggable="true" data-id="wr1">Khalil Shakir</li>
+            <li draggable="true" data-id="wr2">Keon Coleman</li>
+            <li draggable="true" data-id="wr3">Josh Palmer</li>
+            <li draggable="true" data-id="wr3">Curtis Samuel</li>
+            <li draggable="true" data-id="wr3">Elijah Moore</li>
           </ul>
           <input type="hidden" name="wr_order" id="wrInput">
         </div>
@@ -123,9 +126,15 @@
         <div class="dropdown-container">
           <div id="olHeader" class="dropdown-header">Select Item</div>
           <ul id="olList" class="dropdown-list">
-            <li draggable="true" data-id="ol1">OL 1</li>
-            <li draggable="true" data-id="ol2">OL 2</li>
-            <li draggable="true" data-id="ol3">OL 3</li>
+            <li draggable="true" data-id="ol1">Dion Dawkins</li>
+            <li draggable="true" data-id="ol2">David Edwards</li>
+            <li draggable="true" data-id="ol3">Connor McGovern</li>
+            <li draggable="true" data-id="ol3">O'Cyrus Torrence</li>
+            <li draggable="true" data-id="ol3">Spencer Brown</li>
+            <li draggable="true" data-id="ol3">Kendrick Green</li>
+            <li draggable="true" data-id="ol3">Alec Anderson</li>
+            <li draggable="true" data-id="ol3">Sedrick Van-Pran Granger</li>
+            <li draggable="true" data-id="ol3">Tylan Grable</li>
           </ul>
           <input type="hidden" name="ol_order" id="olInput">
         </div>
@@ -137,5 +146,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="/static/js/depth_chart.js"></script>
+  <script src="/static/js/depth_chart_offense.js"></script>
 {% endblock %}

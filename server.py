@@ -12,9 +12,13 @@ templates = Jinja2Templates(directory="templates")
 # Mount the static files directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/depthchart", response_class=HTMLResponse)
+@app.get("/depth_chart_offense", response_class=HTMLResponse)
 async def get_depth_chart(request: Request):
-    return templates.TemplateResponse("depth_chart.html", {"request": request})
+    return templates.TemplateResponse("depth_chart_offense.html", {"request": request})
+
+@app.get("/depth_chart_defense", response_class=HTMLResponse)
+async def get_depth_chart_defense(request: Request):
+    return templates.TemplateResponse("depth_chart_defense.html", {"request": request})
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="127.0.0.1", port=8080, reload=True)
