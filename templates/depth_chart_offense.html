@@ -88,7 +88,7 @@
           <div id="qbHeader" class="dropdown-header">Select Item</div>
           <ul id="qbList" class="dropdown-list">
             {% for qb in depth_qb %}
-              <li draggable="true" data-id="{{ qb[0] }}">{{ qb[1] + " " + qb[2] }}</li>
+              <li draggable="true" data-id="{{ qb[0] }}" skill="{{ qb[6] }}">{{ qb[1] + " " + qb[2] }}</li>
             {% endfor %}
           </ul>
           <input type="hidden" name="qb_order" id="qb_order">
@@ -100,7 +100,7 @@
           <div id="rbHeader" class="dropdown-header">Select Item</div>
           <ul id="rbList" class="dropdown-list">
             {% for rb in depth_rb %}
-              <li draggable="true" data-id="{{ rb[0] }}">{{ rb[1] + " " + rb[2] }}</li>
+              <li draggable="true" data-id="{{ rb[0] }}" skill="{{ rb[6] }}">{{ rb[1] + " " + rb[2] }}</li>
             {% endfor %}
           </ul>
           <input type="hidden" name="rb_order" id="rb_order">
@@ -112,7 +112,7 @@
           <div id="wrHeader" class="dropdown-header">Select Item</div>
           <ul id="wrList" class="dropdown-list">
             {% for wr in depth_wr %}
-              <li draggable="true" data-id="{{ wr[0] }}">{{ wr[1] + " " + wr[2] }}</li>
+              <li draggable="true" data-id="{{ wr[0] }}" skill="{{ wr[6] }}">{{ wr[1] + " " + wr[2] }}</li>
             {% endfor %}
           </ul>
           <input type="hidden" name="wr_order" id="wr_order">
@@ -124,7 +124,7 @@
           <div id="olHeader" class="dropdown-header">Select Item</div>
           <ul id="olList" class="dropdown-list">
             {% for ol in depth_ol %}
-              <li draggable="true" data-id="{{ ol[0] }}">{{ ol[1] + " " + ol[2] }}</li>
+              <li draggable="true" data-id="{{ ol[0] }}" skill="{{ ol[6] }}">{{ ol[1] + " " + ol[2] }}</li>
             {% endfor %}
           </ul>
           <input type="hidden" name="ol_order" id="ol_order">

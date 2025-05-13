@@ -121,5 +121,6 @@ function updateLineup() {
         const playerCard = playerCards[i];
         const player = playerPositions[i];
         playerCard.querySelector('.player-name').textContent = player.textContent;
+        playerCard.querySelector('.player-rating').textContent = player.getAttribute('skill');
     }
 }

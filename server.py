@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # for testing purposes
-team_id = 1
+team_id = 2
 
 
 @app.get("/depth_chart_offense", response_class=HTMLResponse)
@@ -80,5 +80,10 @@ async def get_league_table(request: Request):
     standings = get_standings(league_id)
 
     return templates.TemplateResponse("standings.html", {"request": request, "standings": standings, "league": league})
+
+@app.get("/home", response_class=HTMLResponse)
+async def get_home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

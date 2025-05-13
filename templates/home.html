@@ -1,0 +1,14 @@
+{% extends "template.html" %}
+{% block head %}
+  <title>Home</title>
+  <link href="/static/css/home.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1>Your Teams</h1>
+    <p>Your one-stop solution for managing your football team.</p>
+    <a href="/depth_chart_offense"><button class="btn btn-primary">View Depth Chart</button></a>
+    <a href="/standings"><button class="btn btn-secondary">View Standings</button></a>
+  </div>
+{% endblock %}
