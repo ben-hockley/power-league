@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 import os
-from database import get_depth_chart_by_position, save_depth_chart
+from database import get_depth_chart_by_position, save_depth_chart, get_standings, get_league_id, get_league
 from fastapi import Form
 from config import SERVER_HOST
 
@@ -55,6 +55,7 @@ async def get_depth_chart_defense(request: Request):
     depth_db = get_depth_chart_by_position(team_id, "DB")
     
     return templates.TemplateResponse("depth_chart_defense.html", {"request": request, "depth_dl": depth_dl, "depth_lb": depth_lb, "depth_db": depth_db})
+
 # save depth chart changes to the database
 @app.post("/depth_chart_defense")
 async def save_depth_chart_defense_changes(request: Request):
@@ -69,5 +70,15 @@ async def save_depth_chart_defense_changes(request: Request):
 
     return RedirectResponse(url="/depth_chart_defense", status_code=303)
 
+
+@app.get("/standings", response_class=HTMLResponse)
+async def get_league_table(request: Request):
+
+    league_id = get_league_id(team_id)
+
+    league = get_league(league_id)
+    standings = get_standings(league_id)
+
+    return templates.TemplateResponse("standings.html", {"request": request, "standings": standings, "league": league})
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

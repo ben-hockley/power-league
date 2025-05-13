@@ -1,0 +1,35 @@
+{% extends "template.html" %}
+
+{% block head %}
+  <title>Standings</title>
+  <link href="/static/css/standings.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h2>{{ league[1] }} Standings</h2>
+    <h3>Season {{ league[2] }}</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Wins</th>
+          <th>Losses</th>
+          <th>Points For</th>
+          <th>Points Against</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for team in standings %}
+          <tr>
+            <td>{{ team[1] }}</td>
+            <td>{{ team[10] }}</td>
+            <td>{{ team[11] }}</td>
+            <td>{{ team[12] }}</td>
+            <td>{{ team[13] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
