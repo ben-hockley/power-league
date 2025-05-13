@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     highlightStarters(); // Run the function when the page loads
     updateLineup(); // Run the function when the page loads
+    updateListener(); // Run the function when the page loads
 });
 
 const dropdowns = [
-      { listId: 'dlList', headerId: 'dlHeader', inputId: 'dlInput' },
-      { listId: 'lbList', headerId: 'lbHeader', inputId: 'lbInput' },
-      { listId: 'dbList', headerId: 'dbHeader', inputId: 'dbInput' },
+      { listId: 'dlList', headerId: 'dlHeader', inputId: 'dl_order' },
+      { listId: 'lbList', headerId: 'lbHeader', inputId: 'lb_order' },
+      { listId: 'dbList', headerId: 'dbHeader', inputId: 'db_order' },
     ];
 
     dropdowns.forEach(({ listId, headerId }) => updateHeader(listId, headerId));
@@ -26,6 +27,7 @@ const dropdowns = [
         updateHeader(listId, headerId);
         highlightStarters();
         updateLineup();
+        updateListener();
       });
 
       list.addEventListener('dragover', (e) => {
@@ -61,20 +63,13 @@ const dropdowns = [
       }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    function handleSubmit(e) {
-      e.preventDefault();
+    function updateListener() {
       dropdowns.forEach(({ listId, inputId }) => {
         const list = document.getElementById(listId);
         const input = document.getElementById(inputId);
         const order = [...list.querySelectorAll('li')].map(li => li.dataset.id);
-        input.value = order.join(',');
+        input.value = JSON.stringify(order).slice(1, -1).replaceAll(/"/g, '');
       });
-
-      alert('Form submitted!\n' +
-        dropdowns.map(({ inputId }) => {
-          const input = document.getElementById(inputId);
-          return `${input.name}: ${input.value}`;
-        }).join('\n'));
     }
 
 function highlightStarters() {

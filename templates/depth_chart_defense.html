@@ -79,49 +79,44 @@
     <!-- Right Panel -->
     <div class="right-panel">
       <h2>Depth Chart - Defense</h2>
-      <form id="myForm" onsubmit="handleSubmit(event)">
+      <form id="myForm" action="/depth_chart_defense" method="POST">
         <!-- DL -->
         <label for="dlList" class="form-label">DL</label>
         <div class="dropdown-container">
           <div id="dlHeader" class="dropdown-header">Select Item</div>
           <ul id="dlList" class="dropdown-list">
-            <li draggable="true" data-id="dl1">Greg Rousseau</li>
-            <li draggable="true" data-id="dl2">Daquan Jones</li>
-            <li draggable="true" data-id="dl3">Ed Oliver</li>
-            <li draggable="true" data-id="dl4">Joey Bosa</li>
-            <li draggable="true" data-id="dl5">Landon Jackson</li>
+            {% for dl in depth_dl %}
+              <li draggable="true" data-id="{{ dl[0] }}">{{ dl[1] + " " + dl[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="dl_order" id="dlInput">
+          <input type="hidden" name="dl_order" id="dl_order">
         </div>
 
-        <!-- RB -->
+        <!-- LB -->
         <label for="lbList" class="form-label">LB</label>
         <div class="dropdown-container">
           <div id="lbHeader" class="dropdown-header">Select Item</div>
           <ul id="lbList" class="dropdown-list">
-            <li draggable="true" data-id="lb1">Terrell Bernard</li>
-            <li draggable="true" data-id="lb2">Matt Milano</li>
-            <li draggable="true" data-id="lb3">Dorian Williams</li>
-            <li draggable="true" data-id="lb4">Baylon Spector</li>
+            {% for lb in depth_lb %}
+              <li draggable="true" data-id="{{ lb[0] }}">{{ lb[1] + " " + lb[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="lb_order" id="lbInput">
+          <input type="hidden" name="lb_order" id="lb_order">
         </div>
 
-        <!-- WR -->
+        <!-- DB -->
         <label for="dbList" class="form-label">DB</label>
         <div class="dropdown-container">
           <div id="dbHeader" class="dropdown-header">Select Item</div>
           <ul id="dbList" class="dropdown-list">
-            <li draggable="true" data-id="db1">Christian Benford</li>
-            <li draggable="true" data-id="db2">Damar Hamlin</li>
-            <li draggable="true" data-id="db3">Cole Bishop</li>
-            <li draggable="true" data-id="db4">Taron Johnson</li>
-            <li draggable="true" data-id="db5">Tre White</li>
+            {% for db in depth_db %}
+              <li draggable="true" data-id="{{ db[0] }}">{{ db[1] + " " + db[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="db_order" id="dbInput">
+          <input type="hidden" name="db_order" id="db_order">
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Save</button>
       </form>
     </div>
   </div>

@@ -81,17 +81,17 @@
     <!-- Right Panel -->
     <div class="right-panel">
       <h2>Depth Chart - Offense</h2>
-      <form id="myForm" onsubmit="handleSubmit(event)">
+      <form id="myForm" action="/depth_chart_offense" method="POST">
         <!-- QB -->
         <label for="qbList" class="form-label">QB</label>
         <div class="dropdown-container">
           <div id="qbHeader" class="dropdown-header">Select Item</div>
           <ul id="qbList" class="dropdown-list">
-            <li draggable="true" data-id="qb1">Josh Allen</li>
-            <li draggable="true" data-id="qb2">Mitch Trubisky</li>
-            <li draggable="true" data-id="qb3">Shane Buechele</li>
+            {% for qb in depth_qb %}
+              <li draggable="true" data-id="{{ qb[0] }}">{{ qb[1] + " " + qb[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="qb_order" id="qbInput">
+          <input type="hidden" name="qb_order" id="qb_order">
         </div>
 
         <!-- RB -->
@@ -99,12 +99,11 @@
         <div class="dropdown-container">
           <div id="rbHeader" class="dropdown-header">Select Item</div>
           <ul id="rbList" class="dropdown-list">
-            <li draggable="true" data-id="rb1">James Cook</li>
-            <li draggable="true" data-id="rb2">Ray Davis</li>
-            <li draggable="true" data-id="rb3">Ty Johnson</li>
-            <li draggable="true" data-id="rb3">Frank Gore Jr.</li>
+            {% for rb in depth_rb %}
+              <li draggable="true" data-id="{{ rb[0] }}">{{ rb[1] + " " + rb[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="rb_order" id="rbInput">
+          <input type="hidden" name="rb_order" id="rb_order">
         </div>
 
         <!-- WR -->
@@ -112,13 +111,11 @@
         <div class="dropdown-container">
           <div id="wrHeader" class="dropdown-header">Select Item</div>
           <ul id="wrList" class="dropdown-list">
-            <li draggable="true" data-id="wr1">Khalil Shakir</li>
-            <li draggable="true" data-id="wr2">Keon Coleman</li>
-            <li draggable="true" data-id="wr3">Josh Palmer</li>
-            <li draggable="true" data-id="wr3">Curtis Samuel</li>
-            <li draggable="true" data-id="wr3">Elijah Moore</li>
+            {% for wr in depth_wr %}
+              <li draggable="true" data-id="{{ wr[0] }}">{{ wr[1] + " " + wr[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="wr_order" id="wrInput">
+          <input type="hidden" name="wr_order" id="wr_order">
         </div>
 
         <!-- OL -->
@@ -126,20 +123,14 @@
         <div class="dropdown-container">
           <div id="olHeader" class="dropdown-header">Select Item</div>
           <ul id="olList" class="dropdown-list">
-            <li draggable="true" data-id="ol1">Dion Dawkins</li>
-            <li draggable="true" data-id="ol2">David Edwards</li>
-            <li draggable="true" data-id="ol3">Connor McGovern</li>
-            <li draggable="true" data-id="ol3">O'Cyrus Torrence</li>
-            <li draggable="true" data-id="ol3">Spencer Brown</li>
-            <li draggable="true" data-id="ol3">Kendrick Green</li>
-            <li draggable="true" data-id="ol3">Alec Anderson</li>
-            <li draggable="true" data-id="ol3">Sedrick Van-Pran Granger</li>
-            <li draggable="true" data-id="ol3">Tylan Grable</li>
+            {% for ol in depth_ol %}
+              <li draggable="true" data-id="{{ ol[0] }}">{{ ol[1] + " " + ol[2] }}</li>
+            {% endfor %}
           </ul>
-          <input type="hidden" name="ol_order" id="olInput">
+          <input type="hidden" name="ol_order" id="ol_order">
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Save</button>
       </form>
     </div>
   </div>
