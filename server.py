@@ -7,6 +7,7 @@ from repositories.user_repository import create_user, check_password
 
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart
 from repositories.league_repository import get_standings, get_league, get_league_id
+from repositories.team_repository import get_teams_by_user_id
 
 from config import SERVER_HOST
 
@@ -19,6 +20,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # for testing purposes
+user_id = 1
 team_id = 2
 
 
@@ -119,7 +121,14 @@ async def get_league_table(request: Request):
 
 @app.get("/home", response_class=HTMLResponse)
 async def get_home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    teams = get_teams_by_user_id(user_id)
+    leagues = []
+    for team in teams:
+        league_id = get_league_id(team[0])
+        league = get_league(league_id)
+        leagues.append(league)
+    
+    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues})
 
 
 if __name__ == "__main__":
