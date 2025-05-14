@@ -7,8 +7,13 @@
 {% block content %}
   <div class="container">
     <h1>Your Teams</h1>
-    <p>Your one-stop solution for managing your football team.</p>
-    <a href="/depth_chart_offense"><button class="btn btn-primary">View Depth Chart</button></a>
-    <a href="/standings"><button class="btn btn-secondary">View Standings</button></a>
+    <ul class="list-group list-group-flush mb-4">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>TEAM NAME</span>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </li>
+        <li class="list-group-item text-muted">You do not manage any teams</li>
+    </ul>
+    <a href="#" class="btn btn-success btn-lg w-100">Create New Team</a>
   </div>
 {% endblock %}

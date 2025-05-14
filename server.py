@@ -3,9 +3,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
-import os
-from database import get_depth_chart_by_position, save_depth_chart, get_standings, get_league_id, get_league
-from fastapi import Form
+from repositories.user_repository import create_user, check_password
+
+from repositories.player_repository import get_depth_chart_by_position, save_depth_chart
+from repositories.league_repository import get_standings, get_league, get_league_id
+
 from config import SERVER_HOST
 
 app = FastAPI()
@@ -19,6 +21,40 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # for testing purposes
 team_id = 2
 
+
+@app.get("/")
+async def login(request: Request):
+    return RedirectResponse(url="/login", status_code=303)
+
+@app.get("/login", response_class=HTMLResponse)
+async def get_login(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+async def post_login(request: Request):
+    form = await request.form()
+    username = form.get("username")
+    password = form.get("password")
+
+    # Check if the user exists and the password is correct
+    if check_password(username, password):
+        return RedirectResponse(url="/home", status_code=303)
+    else:
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
+
+@app.get("/create_account", response_class=HTMLResponse)
+async def get_create_account(request: Request):
+    return templates.TemplateResponse("create_account.html", {"request": request})
+
+@app.post("/create_account")
+async def create_account(request: Request):
+    form = await request.form()
+    username = form.get("username")
+    password = form.get("password")
+
+    # Check if the user already exists
+    create_user(username, password)
+    return RedirectResponse(url="/login", status_code=303)
 
 @app.get("/depth_chart_offense", response_class=HTMLResponse)
 async def get_depth_chart(request: Request):
@@ -84,6 +120,7 @@ async def get_league_table(request: Request):
 @app.get("/home", response_class=HTMLResponse)
 async def get_home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
+
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)
