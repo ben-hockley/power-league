@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -7,14 +7,15 @@ from repositories.user_repository import create_user, check_password, get_user_i
 
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart
 from repositories.league_repository import get_standings, get_league, get_league_id
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id
 
-#from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
 
 from config import SERVER_HOST
 
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Set up Jinja2 templates directory
 templates = Jinja2Templates(directory="templates")
@@ -26,6 +27,21 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 #user_id = 1
 #team_id = 2
 
+def get_current_user(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return user_id
+
+def check_user_ownership(request: Request, team_id: int):
+    user_id = get_current_user(request)
+    team_owner_id = get_team_owner_id(team_id)
+    if user_id == team_owner_id:
+        return True
+    else:
+        return False
+        
+
 
 @app.get("/")
 async def login(request: Request):
@@ -33,17 +49,22 @@ async def login(request: Request):
 
 @app.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
+    request.session.clear()  # Clear any existing session data
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login")
 async def post_login(request: Request):
+    request.session.clear()  # Clear any existing session data
     form = await request.form()
     username = form.get("username")
     password = form.get("password")
 
     # Check if the user exists and the password is correct
     if check_password(username, password):
-        return RedirectResponse(url="/home", status_code=303)
+        request.session["user_id"] = get_user_id(username)
+        
+        user_id = request.session.get("user_id")
+        return RedirectResponse(url=f"/home/{user_id}", status_code=303)
     else:
         return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
 
@@ -64,6 +85,9 @@ async def create_account(request: Request):
 @app.get("/depth_chart_offense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart(request: Request, team_id: int):
 
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
     team = get_team_by_id(team_id)
 
     depth_qb = get_depth_chart_by_position(team_id, "QB")
@@ -76,6 +100,10 @@ async def get_depth_chart(request: Request, team_id: int):
 # save depth chart changes to the database
 @app.post("/depth_chart_offense/{team_id}")
 async def save_depth_chart_offense_changes(request: Request, team_id: int):
+
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+    
     form = await request.form()
     depth_qb = form.get("qb_order")
     depth_rb = form.get("rb_order")
@@ -93,6 +121,9 @@ async def save_depth_chart_offense_changes(request: Request, team_id: int):
 @app.get("/depth_chart_defense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart_defense(request: Request, team_id: int):
 
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
     team = get_team_by_id(team_id)
 
     depth_dl = get_depth_chart_by_position(team_id, "DL")
@@ -104,6 +135,10 @@ async def get_depth_chart_defense(request: Request, team_id: int):
 # save depth chart changes to the database
 @app.post("/depth_chart_defense/{team_id}")
 async def save_depth_chart_defense_changes(request: Request, team_id: int):
+
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
     form = await request.form()
     depth_dl = form.get("dl_order")
     depth_lb = form.get("lb_order")
@@ -119,6 +154,9 @@ async def save_depth_chart_defense_changes(request: Request, team_id: int):
 @app.get("/standings/{team_id}", response_class=HTMLResponse)
 async def get_league_table(request: Request, team_id: int):
 
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
     team = get_team_by_id(team_id)
 
     league_id = get_league_id(team_id)
@@ -130,6 +168,11 @@ async def get_league_table(request: Request, team_id: int):
 
 @app.get("/home/{user_id}", response_class=HTMLResponse)
 async def get_home(request: Request, user_id: int):
+
+    # Check if the user is logged in
+    if user_id != get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+    
     teams = get_teams_by_user_id(user_id)
     leagues = []
     for team in teams:
@@ -141,6 +184,10 @@ async def get_home(request: Request, user_id: int):
 
 @app.get("/team/{team_id}", response_class=HTMLResponse)
 async def get_team(request: Request, team_id: int):
+
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+    
     team = get_team_by_id(team_id)
     return templates.TemplateResponse("team_home.html", {"request": request, "team_id": team_id, "team": team})
 

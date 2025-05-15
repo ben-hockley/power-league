@@ -24,3 +24,17 @@ def get_team_by_id(team_id: int):
         return row
     else:
         return None
+    
+def get_team_owner_id(team_id: int):
+    """
+    Get the owner ID for a specific team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM teams WHERE id = ?", (team_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None
