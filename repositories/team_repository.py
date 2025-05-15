@@ -38,3 +38,13 @@ def get_team_owner_id(team_id: int):
         return row[0]
     else:
         return None
+    
+def create_new_team(user_id: int, team_name: str, league_id: int):
+    """
+    Create a new team in the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO teams (user_id, team_name, league_id) VALUES (?, ?, ?)", (user_id, team_name, league_id))
+    conn.commit()
+    conn.close()

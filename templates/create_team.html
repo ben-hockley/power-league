@@ -1,0 +1,26 @@
+{% extends "user_template.html" %}
+
+{% block head %}
+  <title>Create New Team</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1>Create New Team</h1>
+    <form method="POST" action="/create_team/{{user_id}}">
+      <div class="mb-3">
+        <label for="team_name" class="form-label">Team Name</label>
+        <input type="text" class="form-control" id="team_name" name="team_name" required>
+      </div>
+      <div class="mb-3">
+        <label for="league_id" class="form-label">League</label>
+        <select class="form-select" id="league_id" name="league_id" required>
+          {% for league in public_leagues %}
+            <option value="{{ league[0] }}">{{ league[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Team</button>
+    </form>
+  </div>
+{% endblock %}

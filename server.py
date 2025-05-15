@@ -6,8 +6,8 @@ import uvicorn
 from repositories.user_repository import create_user, check_password, get_user_id
 
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart
-from repositories.league_repository import get_standings, get_league, get_league_id
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
@@ -180,7 +180,7 @@ async def get_home(request: Request, user_id: int):
         league = get_league(league_id)
         leagues.append(league)
     
-    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues})
+    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues, "user_id": user_id})
 
 @app.get("/team/{team_id}", response_class=HTMLResponse)
 async def get_team(request: Request, team_id: int):
@@ -190,6 +190,36 @@ async def get_team(request: Request, team_id: int):
     
     team = get_team_by_id(team_id)
     return templates.TemplateResponse("team_home.html", {"request": request, "team_id": team_id, "team": team})
+
+@app.get("/create_team/{user_id}", response_class=HTMLResponse)
+async def get_create_team(request: Request, user_id: int):
+    # Check if the user is logged in
+    if user_id != get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+    
+    public_leagues = get_public_leagues()
+    
+    return templates.TemplateResponse("create_team.html", {"request": request, "user_id": user_id, "public_leagues": public_leagues})
+
+@app.post("/create_team/{user_id}")
+async def post_create_team(request: Request, user_id: int):
+    # Check if the user is logged in
+    if user_id != get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    team_name = form.get("team_name")
+    league_id = form.get("league_id")
+
+    # Create a new team in the database
+    create_new_team(user_id, team_name, league_id)
+    
+    return RedirectResponse(url=f"/home/{user_id}", status_code=303)
+
+@app.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=303)
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

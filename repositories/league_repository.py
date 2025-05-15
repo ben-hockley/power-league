@@ -38,3 +38,14 @@ def get_league(leagueId: int):
         return row
     else:
         return None
+    
+def get_public_leagues():
+    """
+    Get all public leagues from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM leagues WHERE is_public = 1")
+    rows = cur.fetchall()
+    conn.close()
+    return rows
