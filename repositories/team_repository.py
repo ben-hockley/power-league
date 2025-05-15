@@ -1,4 +1,5 @@
 from repositories.database import get_db_connection
+from repositories.player_repository import fill_new_team
 
 def get_teams_by_user_id(user_id: int):
     """
@@ -47,4 +48,6 @@ def create_new_team(user_id: int, team_name: str, league_id: int):
     cur = conn.cursor()
     cur.execute("INSERT INTO teams (user_id, team_name, league_id) VALUES (?, ?, ?)", (user_id, team_name, league_id))
     conn.commit()
+    team_id = cur.lastrowid
     conn.close()
+    fill_new_team(team_id)
