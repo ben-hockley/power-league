@@ -3,11 +3,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
-from repositories.user_repository import create_user, check_password
+from repositories.user_repository import create_user, check_password, get_user_id
 
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart
 from repositories.league_repository import get_standings, get_league, get_league_id
-from repositories.team_repository import get_teams_by_user_id
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id
+
+#from starlette.middleware.sessions import SessionMiddleware
+from config import SECRET_KEY
 
 from config import SERVER_HOST
 
@@ -20,8 +23,8 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # for testing purposes
-user_id = 1
-team_id = 2
+#user_id = 1
+#team_id = 2
 
 
 @app.get("/")
@@ -58,19 +61,21 @@ async def create_account(request: Request):
     create_user(username, password)
     return RedirectResponse(url="/login", status_code=303)
 
-@app.get("/depth_chart_offense", response_class=HTMLResponse)
-async def get_depth_chart(request: Request):
+@app.get("/depth_chart_offense/{team_id}", response_class=HTMLResponse)
+async def get_depth_chart(request: Request, team_id: int):
+
+    team = get_team_by_id(team_id)
 
     depth_qb = get_depth_chart_by_position(team_id, "QB")
     depth_rb = get_depth_chart_by_position(team_id, "RB")
     depth_wr = get_depth_chart_by_position(team_id, "WR")
     depth_ol = get_depth_chart_by_position(team_id, "OL")
 
-    return templates.TemplateResponse("depth_chart_offense.html", {"request": request, "depth_qb": depth_qb, "depth_rb": depth_rb, "depth_wr": depth_wr, "depth_ol": depth_ol})
+    return templates.TemplateResponse("depth_chart_offense.html", {"request": request, "depth_qb": depth_qb, "depth_rb": depth_rb, "depth_wr": depth_wr, "depth_ol": depth_ol, "team_id": team_id, "team": team})
 
 # save depth chart changes to the database
-@app.post("/depth_chart_offense")
-async def save_depth_chart_offense_changes(request: Request):
+@app.post("/depth_chart_offense/{team_id}")
+async def save_depth_chart_offense_changes(request: Request, team_id: int):
     form = await request.form()
     depth_qb = form.get("qb_order")
     depth_rb = form.get("rb_order")
@@ -82,21 +87,23 @@ async def save_depth_chart_offense_changes(request: Request):
     save_depth_chart(team_id, "WR", depth_wr)
     save_depth_chart(team_id, "OL", depth_ol)
 
-    return RedirectResponse(url="/depth_chart_offense", status_code=303)
+    return RedirectResponse(url=f"/depth_chart_offense/{team_id}", status_code=303)
 
 
-@app.get("/depth_chart_defense", response_class=HTMLResponse)
-async def get_depth_chart_defense(request: Request):
+@app.get("/depth_chart_defense/{team_id}", response_class=HTMLResponse)
+async def get_depth_chart_defense(request: Request, team_id: int):
+
+    team = get_team_by_id(team_id)
 
     depth_dl = get_depth_chart_by_position(team_id, "DL")
     depth_lb = get_depth_chart_by_position(team_id, "LB")
     depth_db = get_depth_chart_by_position(team_id, "DB")
     
-    return templates.TemplateResponse("depth_chart_defense.html", {"request": request, "depth_dl": depth_dl, "depth_lb": depth_lb, "depth_db": depth_db})
+    return templates.TemplateResponse("depth_chart_defense.html", {"request": request, "depth_dl": depth_dl, "depth_lb": depth_lb, "depth_db": depth_db, "team_id": team_id, "team": team})
 
 # save depth chart changes to the database
-@app.post("/depth_chart_defense")
-async def save_depth_chart_defense_changes(request: Request):
+@app.post("/depth_chart_defense/{team_id}")
+async def save_depth_chart_defense_changes(request: Request, team_id: int):
     form = await request.form()
     depth_dl = form.get("dl_order")
     depth_lb = form.get("lb_order")
@@ -106,21 +113,23 @@ async def save_depth_chart_defense_changes(request: Request):
     save_depth_chart(team_id, "LB", depth_lb)
     save_depth_chart(team_id, "DB", depth_db)
 
-    return RedirectResponse(url="/depth_chart_defense", status_code=303)
+    return RedirectResponse(url=f"/depth_chart_defense/{team_id}", status_code=303)
 
 
-@app.get("/standings", response_class=HTMLResponse)
-async def get_league_table(request: Request):
+@app.get("/standings/{team_id}", response_class=HTMLResponse)
+async def get_league_table(request: Request, team_id: int):
+
+    team = get_team_by_id(team_id)
 
     league_id = get_league_id(team_id)
 
     league = get_league(league_id)
     standings = get_standings(league_id)
 
-    return templates.TemplateResponse("standings.html", {"request": request, "standings": standings, "league": league})
+    return templates.TemplateResponse("standings.html", {"request": request, "standings": standings, "league": league, "team_id": team_id, "team": team})
 
-@app.get("/home", response_class=HTMLResponse)
-async def get_home(request: Request):
+@app.get("/home/{user_id}", response_class=HTMLResponse)
+async def get_home(request: Request, user_id: int):
     teams = get_teams_by_user_id(user_id)
     leagues = []
     for team in teams:
@@ -130,6 +139,10 @@ async def get_home(request: Request):
     
     return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues})
 
+@app.get("/team/{team_id}", response_class=HTMLResponse)
+async def get_team(request: Request, team_id: int):
+    team = get_team_by_id(team_id)
+    return templates.TemplateResponse("team_home.html", {"request": request, "team_id": team_id, "team": team})
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

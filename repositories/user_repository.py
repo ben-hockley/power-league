@@ -43,3 +43,17 @@ def check_password(username: str, password: str):
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
     else:
         return False
+
+def get_user_id(username: str):
+    """
+    Get the user ID for a specific username from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE username = ?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None

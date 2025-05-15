@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-<a href="/depth_chart_offense"><button class="btn btn-primary">Offense</button></a>
+<a href="/depth_chart_offense/{{team_id}}"><button class="btn btn-primary">Offense</button></a>
 <button class="btn btn-secondary">Defense</button>
   <div class="container">
     <!-- Left Panel -->
@@ -79,7 +79,7 @@
     <!-- Right Panel -->
     <div class="right-panel">
       <h2>Depth Chart - Defense</h2>
-      <form id="myForm" action="/depth_chart_defense" method="POST">
+      <form id="myForm" action="/depth_chart_defense/{{team_id}}" method="POST">
         <!-- DL -->
         <label for="dlList" class="form-label">DL</label>
         <div class="dropdown-container">
