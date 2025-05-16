@@ -239,3 +239,14 @@ def fill_new_team(teamId: int):
     # Sort all depth charts after filling the team
     clean_all_depth_charts(teamId)
     sort_all_depth_charts(teamId)
+
+def get_players_by_team(teamId: int):
+    """
+    Get players from the database for a given team ID.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT * FROM players WHERE team_id = {teamId}")
+    rows = cur.fetchall()
+    conn.close()
+    return rows

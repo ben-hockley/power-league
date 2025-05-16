@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 from repositories.user_repository import create_user, check_password, get_user_id
 
-from repositories.player_repository import get_depth_chart_by_position, save_depth_chart
+from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team
 from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team
 
@@ -150,6 +150,16 @@ async def save_depth_chart_defense_changes(request: Request, team_id: int):
 
     return RedirectResponse(url=f"/depth_chart_defense/{team_id}", status_code=303)
 
+@app.get("/roster/{team_id}", response_class=HTMLResponse)
+async def get_roster(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    team = get_team_by_id(team_id)
+
+    players = get_players_by_team(team_id)
+
+    return templates.TemplateResponse("roster.html", {"request": request, "players": players, "team_id": team_id, "team": team})
 
 @app.get("/standings/{team_id}", response_class=HTMLResponse)
 async def get_league_table(request: Request, team_id: int):
