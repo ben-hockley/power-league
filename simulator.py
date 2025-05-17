@@ -97,6 +97,29 @@ class Team:
         print(f"DB4: {self.DB4.name} Skill: {self.DB4.skill}")
         print("")
 
+# For Box Scores
+class PassingStatLine:
+    def __init__(self, attempts: int, completions: int, yards: int, td: int):
+        self.attempts = attempts
+        self.completions = completions
+        self.yards = yards
+        self.td = td
+
+class RushingStatLine:
+    def __init__(self, attempts, yards, td):
+        self.attempts = attempts
+        self.yards = yards
+        self.td = td
+
+class ReceivingStatLine:
+    def __init__(self, receptions, yards, td):
+        self.receptions = receptions
+        self.yards = yards
+        self.td = td
+        
+    
+
+
 class Game:
     def __init__(self, homeTeam: Team, awayTeam: Team):
         self.homeTeam = homeTeam
@@ -116,6 +139,13 @@ class Game:
 
         self.toss_winner: Team = None
         self.toss_loser: Team = None
+
+        self.passing_stats = {}
+        self.rushing_stats = {}
+        self.receiving_stats = {}
+
+        self.lastTouch: Player = None
+        self.lastPlayType: str = None # "pass" or "rush"
     
     def get_clock(self):
         """
@@ -182,6 +212,9 @@ class Game:
 
         print(f"{rusher.name} rushes for {yardsGained} yards.")
 
+        self.lastTouch = rusher
+        self.lastPlayType = "rush"
+
         self.yardsToTd -= yardsGained
         self.yardsToDown -= yardsGained
 
@@ -193,6 +226,12 @@ class Game:
             self.down += 1
             
             self.clock -= random.randint(25, 40)
+
+        if rusher in self.rushing_stats:
+            self.rushing_stats[rusher].attempts += 1
+            self.rushing_stats[rusher].yards += yardsGained
+        else:
+            self.rushing_stats[rusher] = RushingStatLine(1, yardsGained, 0)
 
     def passing_play(self):
         CmpPercentage = 50 + (30 * self.possession.passingGameRating)/(self.possession.passingGameRating + self.defending.defenseRating)
@@ -211,6 +250,10 @@ class Game:
         
         if random.randint(1, 100) <= CmpPercentage:
             print(f"{self.possession.QB.name} completes the pass to {receiver.name}.")
+
+            self.lastTouch = receiver
+            self.lastPlayType = "pass"
+
             yardsGained: int = random.randint(-5, 30)
 
             if yardsGained > 0:
@@ -229,9 +272,27 @@ class Game:
                 self.down += 1
             
             self.clock -= random.randint(25, 40)
+
+            if self.possession.QB in self.passing_stats:
+                self.passing_stats[self.possession.QB].attempts += 1
+                self.passing_stats[self.possession.QB].completions += 1
+                self.passing_stats[self.possession.QB].yards += yardsGained
+            else:
+                self.passing_stats[self.possession.QB] = PassingStatLine(1, 1, yardsGained, 0)
+
+            if receiver in self.receiving_stats:
+                self.receiving_stats[receiver].receptions += 1
+                self.receiving_stats[receiver].yards += yardsGained
+            else:
+                self.receiving_stats[receiver] = ReceivingStatLine(1, yardsGained, 0)
         else:
             print(f"{self.possession.QB.name} throws an incomplete pass to {receiver.name}.")
+
+            if self.possession.QB in self.passing_stats:
+                self.passing_stats[self.possession.QB].attempts += 1
+
             self.down += 1
+
 
     def punt(self):
         print(f"{self.possession.team_name} punts the ball.")
@@ -329,6 +390,25 @@ def simulate_game(homeTeamId: int, awayTeamId: int):
                 game.homeScore += 7
             else:
                 game.awayScore += 7
+
+
+            # add touchdown to the stats
+            if game.lastPlayType == "pass":
+                if game.lastTouch in game.receiving_stats:
+                    game.receiving_stats[game.lastTouch].td += 1
+                else:
+                    game.receiving_stats[game.lastTouch] = ReceivingStatLine(0, 0, 1)
+
+                if game.possession.QB in game.passing_stats:
+                    game.passing_stats[game.possession.QB].td += 1
+                else:
+                    game.passing_stats[game.possession.QB] = PassingStatLine(0, 0, 0, 1)
+            
+            elif game.lastPlayType == "rush":
+                if game.lastTouch in game.rushing_stats:
+                    game.rushing_stats[game.lastTouch].td += 1
+                else:
+                    game.rushing_stats[game.lastTouch] = RushingStatLine(0, 0, 1)
             game.possession, game.defending = game.defending, game.possession
             game.down = 1
             game.yardsToTd = 100
@@ -352,8 +432,7 @@ def simulate_game(homeTeamId: int, awayTeamId: int):
                 game.quarter = 4
                 game.clock = 900
             elif game.quarter == 4:
-                print("END OF GAME")
-                game.quarter = 5
+                break
         elif game.down == 4:
             if game.yardsToTd < 50:
                 game.field_goal_attempt()
@@ -361,11 +440,46 @@ def simulate_game(homeTeamId: int, awayTeamId: int):
                 game.punt()
     print("")
     print("END OF GAME")
-    game.print_game_status()
-        
-    # 4TH DOWN
-    # If yards to td < 50, FG Attempt
-    # Else Punt
+    print("Score: ")
+    print(game.homeTeam.team_name + " " + str(game.homeScore))
+    print(game.awayTeam.team_name + " " + str(game.awayScore))
+    print("")
+    print("BOX SCORE")
+    print("----------------------")
+    print("Passing Stats")
+    print(game.homeTeam.team_name)
+    for player, stats in game.passing_stats.items():
+        if player == game.homeTeam.QB:
+            print(f"{player.name}: {stats.attempts} attempts, {stats.completions} completions, {stats.yards} yards, {stats.td} TDs")
+    print("")
+    print(game.awayTeam.team_name)
+    for player, stats in game.passing_stats.items():
+        if player == game.awayTeam.QB:
+            print(f"{player.name}: {stats.attempts} attempts, {stats.completions} completions, {stats.yards} yards, {stats.td} TDs")
+    print("-----------------------")
+    print("Rushing Stats")
+    print(game.homeTeam.team_name)
+    for player, stats in game.rushing_stats.items():
+        if player == game.homeTeam.RB1 or player == game.homeTeam.RB2:
+            print(f"{player.name}: {stats.attempts} attempts, {stats.yards} yards, {stats.td} TDs")
+    print("")
+    print(game.awayTeam.team_name)
+    for player, stats in game.rushing_stats.items():
+        if player == game.awayTeam.RB1 or player == game.awayTeam.RB2:
+            print(f"{player.name}: {stats.attempts} attempts, {stats.yards} yards, {stats.td} TDs")
+    print("-----------------------")
+    print("Receiving Stats")
+    print(game.homeTeam.team_name)
+    for player, stats in game.receiving_stats.items():
+        if player == game.homeTeam.WR1 or player == game.homeTeam.WR2 or player == game.homeTeam.WR3 or player == game.homeTeam.RB1 or player == game.homeTeam.RB2:
+            print(f"{player.name}: {stats.receptions} receptions, {stats.yards} yards, {stats.td} TDs")
+    print("")
+    print(game.awayTeam.team_name)
+    for player, stats in game.receiving_stats.items():
+        if player == game.awayTeam.WR1 or player == game.awayTeam.WR2 or player == game.awayTeam.WR3 or player == game.awayTeam.RB1 or player == game.awayTeam.RB2:
+            print(f"{player.name}: {stats.receptions} receptions, {stats.yards} yards, {stats.td} TDs")
+    print("-----------------------")
+    print("")
 
     
 
