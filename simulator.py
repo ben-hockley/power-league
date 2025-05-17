@@ -1,23 +1,28 @@
 import random
+import io
+from contextlib import redirect_stdout
 
 from repositories.player_repository import get_depth_chart_by_position
 from repositories.team_repository import get_team_name
 
 
 class Player:
-    def __init__(self, id: int, name: str, skill: int):
+    def __init__(self, id: int, name: str, skill: int, team_name: str):
         self.id = id
         self.name = name
         self.skill = skill
+        self.team_name = team_name
     
 def get_player(team_id: int, position: str, order: int) -> Player:
     depth_chart = get_depth_chart_by_position(team_id, position)
+    team_name = get_team_name(team_id)
     index = order - 1
     if depth_chart:
         player_id: int = depth_chart[index][0]
         player_name: str = depth_chart[index][1] + " " + depth_chart[index][2]
         player_skill: int = depth_chart[index][6]
-        return Player(player_id, player_name, player_skill)
+        team_name: str = team_name
+        return Player(player_id, player_name, player_skill, team_name)
     return None
 
 class Team:
@@ -500,8 +505,30 @@ def simulate_game(homeTeamId: int, awayTeamId: int):
             print(f"{player.name}: {stats.receptions} receptions, {stats.yards} yards, {stats.td} TDs")
     print("-----------------------")
     print("")
+    return game
 
+def get_match_report(homeTeamId, awayTeamId):
+    f = io.StringIO()
+    with redirect_stdout(f):
+        game = simulate_game(homeTeamId, awayTeamId)
     
+    match_report = f.getvalue()
+
+    home_score = game.homeScore
+    away_score = game.awayScore
+
+    passing_stats = game.passing_stats
+    rushing_stats = game.rushing_stats
+    receiving_stats = game.receiving_stats
+
+    GameDetails = {
+        "home_score": home_score,
+        "away_score": away_score,
+        "passing_stats": passing_stats,
+        "rushing_stats": rushing_stats,
+        "receiving_stats": receiving_stats,
+        "report": match_report
+    }
+    return GameDetails
 
 simulate_game(1, 2)
-    

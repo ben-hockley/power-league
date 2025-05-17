@@ -14,6 +14,8 @@ from config import SECRET_KEY
 
 from config import SERVER_HOST
 
+from simulator import get_match_report
+
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
@@ -230,6 +232,39 @@ async def post_create_team(request: Request, user_id: int):
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login", status_code=303)
+
+
+@app.get("/match_report/{home_team_id}/{away_team_id}", response_class=HTMLResponse)
+async def match_report(request:Request, home_team_id: int, away_team_id: int):
+    GameDetails = get_match_report(home_team_id, away_team_id)
+
+    homeScore = GameDetails["home_score"]
+    awayScore = GameDetails["away_score"]
+
+    passingStats: dict = GameDetails["passing_stats"]
+    rushingStats = GameDetails["rushing_stats"]
+    receivingStats = GameDetails["receiving_stats"]
+
+
+    report = GameDetails["report"]
+
+    home_team = get_team_by_id(home_team_id)
+    away_team = get_team_by_id(away_team_id)
+
+    return templates.TemplateResponse("match_report.html", {"request": request, 
+                                                            "report": report,
+                                                            "team_id":home_team_id, 
+                                                            "team":home_team, 
+                                                            "home_team": home_team, 
+                                                            "away_team": away_team,
+                                                            "homeScore": homeScore,
+                                                            "awayScore": awayScore,
+                                                            "passingStats": passingStats,
+                                                            "rushingStats": rushingStats,
+                                                            "receivingStats": receivingStats,
+                                                            })
+
+
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

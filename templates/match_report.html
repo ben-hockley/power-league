@@ -1,0 +1,109 @@
+{% extends "template.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Match Report</h1>
+    <h2>{{ home_team[1] }} {{ homeScore }} - {{ awayScore }} {{ away_team[1] }}</h2>
+
+    <!-- Box Score Dropdown -->
+    <div class="accordion mb-3" id="boxScoreAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="boxScoreHeading">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#boxScoreCollapse" aria-expanded="true" aria-controls="boxScoreCollapse">
+            Box Score
+          </button>
+        </h2>
+        <div id="boxScoreCollapse" class="accordion-collapse collapse show" aria-labelledby="boxScoreHeading" data-bs-parent="#boxScoreAccordion">
+          <div class="accordion-body">
+            <h3>Passing Stats</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Player</th>
+                        <th>Attempts</th>
+                        <th>Completions</th>
+                        <th>Yards</th>
+                        <th>TDs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player, stats in passingStats.items() %}
+                    <tr>
+                        <td>{{ player.team_name }}</td>
+                        <td>{{ player.name }}</td>
+                        <td>{{ stats.attempts }}</td>
+                        <td>{{ stats.completions }}</td>
+                        <td>{{ stats.yards }}</td>
+                        <td>{{ stats.td }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <h3>Rushing Stats</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Player</th>
+                        <th>Attempts</th>
+                        <th>Yards</th>
+                        <th>TDs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player, stats in rushingStats.items() %}
+                    <tr>
+                        <td>{{ player.team_name }}</td>
+                        <td>{{ player.name }}</td>
+                        <td>{{ stats.attempts }}</td>
+                        <td>{{ stats.yards }}</td>
+                        <td>{{ stats.td }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <h3>Receiving Stats</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Player</th>
+                        <th>Receptions</th>
+                        <th>Yards</th>
+                        <th>TDs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player, stats in receivingStats.items() %}
+                    <tr>
+                        <td>{{ player.team_name }}</td>
+                        <td>{{ player.name }}</td>
+                        <td>{{ stats.receptions }}</td>
+                        <td>{{ stats.yards }}</td>
+                        <td>{{ stats.td }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Match Report Dropdown -->
+    <div class="accordion" id="matchReportAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="matchReportHeading">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#matchReportCollapse" aria-expanded="false" aria-controls="matchReportCollapse">
+            Match Report
+          </button>
+        </h2>
+        <div id="matchReportCollapse" class="accordion-collapse collapse" aria-labelledby="matchReportHeading" data-bs-parent="#matchReportAccordion">
+          <div class="accordion-body">
+            <pre style="white-space: pre-wrap;">{{ report }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
