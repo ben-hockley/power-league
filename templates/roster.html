@@ -1,7 +1,6 @@
 {% extends "template.html" %}
 {% block head %}
 <title>Power League - Roster</title>
-<script src="https://unpkg.com/tablesort@5.2.1/dist/tablesort.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -39,10 +38,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://unpkg.com/tablesort@5.2.1/dist/tablesort.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        new Tablesort(document.getElementById('roster-table'));
-});
-</script>
+<script src="/static/js/roster.js"></script>
 {% endblock %}
