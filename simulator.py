@@ -174,6 +174,7 @@ class Game:
 
         print(f"Coin Toss: {self.possession.team_name} team wins the toss.")
         print("They opt to receive the kickoff.")
+        print("")
     
     def kickoff(self):
         """
@@ -192,9 +193,11 @@ class Game:
         self.yardsToTd = 100 - returnYards
         self.yardsToDown = 10
         self.clock -= returnYards / 4
+
+        # this is valid because the returner cant go over 50 yards, it will need to be ammended when the returner can go beyond that.
         print(f"{self.possession.QB.name} and the {self.possession.team_name} have the ball at their own {100 - self.yardsToTd} yard line.")
-        print(f"1st Down")
-        print(f"Clock: {self.get_clock()}")
+        print(f"Quarter : {self.quarter}, Clock: {self.get_clock()}")
+        print("")
     
     def exec_play(self):
         if random.randint(1, 3) == 1:
@@ -219,7 +222,8 @@ class Game:
         self.yardsToDown -= yardsGained
 
         if self.yardsToDown <= 0:
-            print(f"1st Down!")
+            if self.yardsToTd > 0:
+                print("1st Down!")
             self.yardsToDown = 10
             self.down = 1
         else:
@@ -265,7 +269,8 @@ class Game:
             self.yardsToDown -= yardsGained
 
             if self.yardsToDown <= 0:
-                print(f"1st Down!")
+                if self.yardsToTd > 0:
+                    print("1st Down!")
                 self.yardsToDown = 10
                 self.down = 1
             else:
@@ -308,11 +313,13 @@ class Game:
         # simulate possession change
         self.yardsToTd = 100 - self.yardsToTd
         self.possession, self.defending = self.defending, self.possession
+        print(f"Fair Catch! {self.possession.team_name} takes over possession, {self.yardsToTd} yards from the end zone.")
 
         # reset the down marker
         self.yardsToDown = 10
         self.down = 1
         self.clock -= random.randint(25, 40)
+        print("")
 
     def field_goal_attempt(self):
         print(f"{self.possession.team_name} attempts a field goal.")
@@ -322,6 +329,7 @@ class Game:
             self.yardsToTd = 100 - self.yardsToTd
             self.down = 1
             self.yardsToDown = 1
+            print("")
         else:
             print("Field goal is good!")
             if self.possession == self.homeTeam:
@@ -331,6 +339,8 @@ class Game:
             self.possession, self.defending = self.defending, self.possession
             self.yardsToDown = 10
             self.down = 1
+            print(self.get_score())
+            print("")
             self.kickoff()
 
     def get_down(self):
@@ -343,14 +353,19 @@ class Game:
         elif self.down == 4:
             return "4th"
 
+    def get_score(self):
+        return f"{self.homeTeam.team_name}: {self.homeScore}, {self.awayTeam.team_name}: {self.awayScore}" 
+    
     def print_game_status(self):
-        print("Score:")
-        print(self.homeTeam.team_name + " " + str(self.homeScore))
-        print(self.awayTeam.team_name + " " + str(self.awayScore))
-        print("")
-        print("Quarter" + " " + str(self.quarter) + ", Clock: " + self.get_clock())
-        print(self.possession.team_name + " has the ball, " + str(self.yardsToTd) + " yards to TD")
-        print(self.get_down() + " and " + str(self.yardsToDown))
+        #print("Score:")
+        #print(self.homeTeam.team_name + " " + str(self.homeScore))
+        #print(self.awayTeam.team_name + " " + str(self.awayScore))
+        #print("")
+
+        if self.yardsToTd > 0:
+            print("Quarter" + " " + str(self.quarter) + ", Clock: " + self.get_clock())
+            print(self.possession.team_name + " has the ball, " + str(self.yardsToTd) + " yards to the end zone.")
+            print(self.get_down() + " and " + str(self.yardsToDown))
         print("")
 
 def simulate_game(homeTeamId: int, awayTeamId: int):
@@ -385,12 +400,17 @@ def simulate_game(homeTeamId: int, awayTeamId: int):
             game.print_game_status()
         if game.yardsToTd <= 0:
             # TOUCHDOWN
-            print("TOUCHDOWN")
+            print(f"{game.possession.team_name} TOUCHDOWN!")
+            if game.lastPlayType == "pass":
+                print(f"{game.possession.QB.name} -> {game.lastTouch.name}")
+            elif game.lastPlayType == "rush":
+                print(game.lastTouch.name)
             if game.possession == homeTeam:
                 game.homeScore += 7
             else:
                 game.awayScore += 7
-
+            print(game.get_score())
+            print("")
 
             # add touchdown to the stats
             if game.lastPlayType == "pass":
