@@ -3,19 +3,21 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
-from repositories.user_repository import create_user, check_password, get_user_id
 
+import json
+import datetime
+
+from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team
 from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id
+from repositories.game_repository import save_game, get_game_by_id
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
-
 from config import SERVER_HOST
 
-from simulator import get_match_report
-
+from simulator import get_match_report, game_details_to_json, json_to_game_details
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
@@ -238,6 +240,19 @@ async def logout(request: Request):
 async def match_report(request:Request, home_team_id: int, away_team_id: int):
     GameDetails = get_match_report(home_team_id, away_team_id)
 
+    # save data to the database
+    league_id = get_team_league_id(home_team_id)
+    details_json = game_details_to_json(GameDetails)
+
+    game_id = save_game(league_id, home_team_id, away_team_id, details_json)
+
+    game_record = get_game_by_id(game_id)
+    game_details = game_record[5]
+    game_details = json_to_game_details(game_details)
+
+    # load the game details
+    GameDetails = game_details
+
     homeScore = GameDetails["home_score"]
     awayScore = GameDetails["away_score"]
 
@@ -245,12 +260,12 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
     rushingStats = GameDetails["rushing_stats"]
     receivingStats = GameDetails["receiving_stats"]
 
-
     report = GameDetails["report"]
 
     home_team = get_team_by_id(home_team_id)
     away_team = get_team_by_id(away_team_id)
 
+    
     return templates.TemplateResponse("match_report.html", {"request": request, 
                                                             "report": report,
                                                             "team_id":home_team_id, 
@@ -264,7 +279,43 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
                                                             "receivingStats": receivingStats,
                                                             })
 
+@app.get("/game_details/{game_id}", response_class=HTMLResponse)
+async def game_details(request: Request, game_id: int):
+    game_record = get_game_by_id(game_id)
+    game_details = game_record[5]
+    game_details = json_to_game_details(game_details)
 
+    GameDetails = game_details
+
+    homeScore = GameDetails["home_score"]
+    awayScore = GameDetails["away_score"]
+
+    passingStats: dict = GameDetails["passing_stats"]
+    rushingStats = GameDetails["rushing_stats"]
+    receivingStats = GameDetails["receiving_stats"]
+
+    report = GameDetails["report"]
+
+    home_team_id = game_record[1]
+    away_team_id = game_record[2]
+
+    home_team = get_team_by_id(home_team_id)
+    away_team = get_team_by_id(away_team_id)
+
+    
+    return templates.TemplateResponse("match_report.html", {"request": request, 
+                                                            "report": report,
+                                                            "game_id":game_id,
+                                                            "team_id":home_team_id, # this is a bit of a workaround, as is the team object passed through, fix this later.
+                                                            "team":home_team,
+                                                            "home_team": home_team, 
+                                                            "away_team": away_team,
+                                                            "homeScore": homeScore,
+                                                            "awayScore": awayScore,
+                                                            "passingStats": passingStats,
+                                                            "rushingStats": rushingStats,
+                                                            "receivingStats": receivingStats,
+                                                            })
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

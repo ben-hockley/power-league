@@ -66,3 +66,17 @@ def create_new_team(user_id: int, team_name: str, league_id: int):
     team_id = cur.lastrowid
     conn.close()
     fill_new_team(team_id)
+
+def get_team_league_id(team_id: int):
+    """
+    Get the league ID for a specific team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT league_id FROM teams WHERE id = ?", (team_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None

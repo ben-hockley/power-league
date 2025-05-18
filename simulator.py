@@ -1,6 +1,7 @@
 import random
 import io
 from contextlib import redirect_stdout
+import json
 
 from repositories.player_repository import get_depth_chart_by_position
 from repositories.team_repository import get_team_name
@@ -522,13 +523,80 @@ def get_match_report(homeTeamId, awayTeamId):
     receiving_stats = game.receiving_stats
 
     GameDetails = {
-        "home_score": home_score,
-        "away_score": away_score,
+        "home_score": home_score, # this is an int (will convert to json)
+        "away_score": away_score, # this is an int (will convert to json)
         "passing_stats": passing_stats,
         "rushing_stats": rushing_stats,
         "receiving_stats": receiving_stats,
-        "report": match_report
+        "report": match_report # this is a string (will convert to json)
     }
     return GameDetails
 
-simulate_game(1, 2)
+
+def game_details_to_json(game_details):
+    """
+    Convert a GameDetails dict (with custom objects) to a JSON string.
+    Converts Player and StatLine objects to dicts, and uses player.id as keys.
+    """
+    def player_to_dict(player):
+        return {
+            "id": player.id,
+            "name": player.name,
+            "skill": player.skill,
+            "team_name": player.team_name
+        }
+
+    def statline_to_dict(stat):
+        return stat.__dict__
+
+    # Convert stats dicts: {Player: StatLine} -> {player_id: {"player": {...}, "stats": {...}}}
+    def convert_stats(stats_dict):
+        return {
+            str(player.id): {
+                "player": player_to_dict(player),
+                "stats": statline_to_dict(stats)
+            }
+            for player, stats in stats_dict.items()
+        }
+
+    serializable = {
+        "home_score": game_details["home_score"],
+        "away_score": game_details["away_score"],
+        "passing_stats": convert_stats(game_details["passing_stats"]),
+        "rushing_stats": convert_stats(game_details["rushing_stats"]),
+        "receiving_stats": convert_stats(game_details["receiving_stats"]),
+        "report": game_details["report"]
+    }
+    return json.dumps(serializable)
+
+def json_to_game_details(json_data):
+    """
+    Convert a JSON string back to a GameDetails dict with custom objects.
+    Reconstructs Player and StatLine objects.
+    """
+    data = json.loads(json_data)
+
+    # Import classes here or at the top of your file
+    # from simulator import Player, PassingStatLine, RushingStatLine, ReceivingStatLine
+
+    def dict_to_player(d):
+        return Player(d["id"], d["name"], d["skill"], d["team_name"])
+
+    def dict_to_statline(stat_dict, stat_class):
+        return stat_class(**stat_dict)
+
+    def restore_stats(stats_dict, stat_class):
+        return {
+            dict_to_player(v["player"]): dict_to_statline(v["stats"], stat_class)
+            for v in stats_dict.values()
+        }
+
+    game_details = {
+        "home_score": data["home_score"],
+        "away_score": data["away_score"],
+        "passing_stats": restore_stats(data["passing_stats"], PassingStatLine),
+        "rushing_stats": restore_stats(data["rushing_stats"], RushingStatLine),
+        "receiving_stats": restore_stats(data["receiving_stats"], ReceivingStatLine),
+        "report": data["report"]
+    }
+    return game_details
