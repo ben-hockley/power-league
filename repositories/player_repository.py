@@ -250,3 +250,47 @@ def get_players_by_team(teamId: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+# function that ages all players in a league by 1 year, and increases/decreases their skill based on their age
+# for example, if a player is under 26, their skill increases by between 0 and 2 (growth stage)
+# if a player is over 30, their skill decreases by between 0 and 2 (decline stage)
+# if a player is between 26 and 30, their skill increases by between -1 and 1 (prime stage)
+def age_league_players(leagueId: int):
+    """
+    Age all players in the league by 1 year.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT ID FROM teams WHERE league_id = ?", (leagueId,))
+    rows = cur.fetchall()
+
+    teams_ids = [row[0] for row in rows]
+    for team_id in teams_ids:
+        cur.execute("SELECT * FROM players WHERE team_id = ?", (team_id,))
+        players = cur.fetchall()
+        for player in players:
+            player_id = player[0]
+            age = player[3]
+            skill = player[6]
+            if age is None or skill is None: # skip these players, shouldnt be in the final version
+                continue
+            # if the player is under 26, increase their skill by between 0 and 2
+            if age < 26:
+                skill += random.randint(0, 2)
+                # if the player is over 30, decrease their skill by between 0 and 2
+            elif age > 30:
+                skill -= random.randint(0, 2)
+                # if the player is between 26 and 30, increase their skill by between -1 and 1
+            else:
+                skill += random.randint(-1, 1)
+
+            # age the player by 1 year
+            age += 1
+
+            # update the player's skill and age in the database
+            cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
+            conn.commit()
+    conn.close()
+
+
+    

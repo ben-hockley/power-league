@@ -8,9 +8,9 @@ import json
 import datetime
 
 from repositories.user_repository import create_user, check_password, get_user_id
-from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team
+from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
 from starlette.middleware.sessions import SessionMiddleware
@@ -235,37 +235,6 @@ async def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login", status_code=303)
 
-
-# this endpoint is used to simulate a game between two teams, the user will be redirected to the game details page after the game is simulated
-# it would be a good idea to restrict this endpoint to only admin users/ the server, so that users can't simulate unplanned games.
-
-@app.get("/match_report/{home_team_id}/{away_team_id}")
-async def match_report(request:Request, home_team_id: int, away_team_id: int):
-    GameDetails = get_match_report(home_team_id, away_team_id)
-
-    # save data to the database
-    league_id = get_team_league_id(home_team_id)
-    details_json = game_details_to_json(GameDetails)
-
-    game_id = save_game(league_id, home_team_id, away_team_id, details_json)
-
-    game_record = get_game_by_id(game_id)
-    game_details = game_record[5]
-    game_details = json_to_game_details(game_details)
-
-    # get the home score and away score for the game
-    homeScore = game_details["home_score"]
-    awayScore = game_details["away_score"]
-
-    # add the result to the teams
-    add_result_to_team(home_team_id, homeScore, awayScore)
-    add_result_to_team(away_team_id, awayScore, homeScore)
-
-    # load the game details
-    GameDetails = game_details
-
-    return RedirectResponse(url=f"/game_details/{game_id}", status_code=303)
-
 @app.get("/game_details/{game_id}", response_class=HTMLResponse)
 async def game_details(request: Request, game_id: int):
 
@@ -341,5 +310,54 @@ async def get_results(request: Request, team_id: int):
 
     return templates.TemplateResponse("results.html", {"request": request, "results": results, "game_headers": list_game_headers, "team_id": team_id, "team": team})
 
+
+### ADMIN PAGES ###
+
+@app.get("/admin", response_class=HTMLResponse)
+async def get_admin(request: Request):
+    # add authentification for admin users here, do this later.
+    # for now, just return the admin page
+
+    # get all leagues from the database
+    leagues = get_all_leagues()
+    # get all teams from the database
+    teams = get_all_teams()
+    return templates.TemplateResponse("admin.html", {"request": request, "leagues": leagues, "teams": teams})
+
+# ages a league by by one year and updates their skill accordingly
+@app.get("/age_league_players/{league_id}", response_class=HTMLResponse)
+async def age_league(request: Request, league_id: int):
+    age_league_players(league_id)
+    return RedirectResponse(url=f"/admin", status_code=303)
+
+# simulates a game between two teams, applies the results to the teams, and saves the game to the database.
+@app.get("/match_report/{home_team_id}/{away_team_id}")
+async def match_report(request:Request, home_team_id: int, away_team_id: int):
+    GameDetails = get_match_report(home_team_id, away_team_id)
+
+    # save data to the database
+    league_id = get_team_league_id(home_team_id)
+    details_json = game_details_to_json(GameDetails)
+
+    game_id = save_game(league_id, home_team_id, away_team_id, details_json)
+
+    game_record = get_game_by_id(game_id)
+    game_details = game_record[5]
+    game_details = json_to_game_details(game_details)
+
+    # get the home score and away score for the game
+    homeScore = game_details["home_score"]
+    awayScore = game_details["away_score"]
+
+    # add the result to the teams
+    add_result_to_team(home_team_id, homeScore, awayScore)
+    add_result_to_team(away_team_id, awayScore, homeScore)
+
+    # load the game details
+    GameDetails = game_details
+
+    return RedirectResponse(url="/admin", status_code=303)
+
+### END OF ADMIN PAGES ###
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

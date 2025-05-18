@@ -104,3 +104,14 @@ def add_result_to_team(team_id: int, points_for: str, points_against: int):
         cur.execute("UPDATE teams SET points_for = points_for + ?, points_against = points_against + ? WHERE id = ?", (points_for, points_against, team_id))
     conn.commit()
     conn.close()
+
+def get_all_teams():
+    """
+    Get all teams from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM teams")
+    rows = cur.fetchall()
+    conn.close()
+    return rows

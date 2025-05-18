@@ -49,3 +49,14 @@ def get_public_leagues():
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_all_leagues():
+    """
+    Get all leagues from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM leagues")
+    rows = cur.fetchall()
+    conn.close()
+    return rows
