@@ -236,7 +236,8 @@ async def logout(request: Request):
     return RedirectResponse(url="/login", status_code=303)
 
 
-@app.get("/match_report/{home_team_id}/{away_team_id}", response_class=HTMLResponse)
+# this endpoint is used to simulate a game between two teams, the user will be redirected to the game details page after the game is simulated
+@app.get("/match_report/{home_team_id}/{away_team_id}")
 async def match_report(request:Request, home_team_id: int, away_team_id: int):
     GameDetails = get_match_report(home_team_id, away_team_id)
 
@@ -265,19 +266,7 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
     home_team = get_team_by_id(home_team_id)
     away_team = get_team_by_id(away_team_id)
 
-    
-    return templates.TemplateResponse("match_report.html", {"request": request, 
-                                                            "report": report,
-                                                            "team_id":home_team_id, 
-                                                            "team":home_team, 
-                                                            "home_team": home_team, 
-                                                            "away_team": away_team,
-                                                            "homeScore": homeScore,
-                                                            "awayScore": awayScore,
-                                                            "passingStats": passingStats,
-                                                            "rushingStats": rushingStats,
-                                                            "receivingStats": receivingStats,
-                                                            })
+    return RedirectResponse(url=f"/game_details/{game_id}", status_code=303)
 
 @app.get("/game_details/{game_id}", response_class=HTMLResponse)
 async def game_details(request: Request, game_id: int):
