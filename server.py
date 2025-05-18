@@ -11,7 +11,7 @@ from repositories.user_repository import create_user, check_password, get_user_i
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team
 from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id
-from repositories.game_repository import save_game, get_game_by_id
+from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
@@ -237,6 +237,8 @@ async def logout(request: Request):
 
 
 # this endpoint is used to simulate a game between two teams, the user will be redirected to the game details page after the game is simulated
+# it would be a good idea to restrict this endpoint to only admin users/ the server, so that users can't simulate unplanned games.
+
 @app.get("/match_report/{home_team_id}/{away_team_id}")
 async def match_report(request:Request, home_team_id: int, away_team_id: int):
     GameDetails = get_match_report(home_team_id, away_team_id)
@@ -253,18 +255,6 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
 
     # load the game details
     GameDetails = game_details
-
-    homeScore = GameDetails["home_score"]
-    awayScore = GameDetails["away_score"]
-
-    passingStats: dict = GameDetails["passing_stats"]
-    rushingStats = GameDetails["rushing_stats"]
-    receivingStats = GameDetails["receiving_stats"]
-
-    report = GameDetails["report"]
-
-    home_team = get_team_by_id(home_team_id)
-    away_team = get_team_by_id(away_team_id)
 
     return RedirectResponse(url=f"/game_details/{game_id}", status_code=303)
 
@@ -305,6 +295,40 @@ async def game_details(request: Request, game_id: int):
                                                             "rushingStats": rushingStats,
                                                             "receivingStats": receivingStats,
                                                             })
+
+@app.get("/results/{team_id}", response_class=HTMLResponse)
+async def get_results(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+    
+    team = get_team_by_id(team_id)
+
+    results = get_games_by_team_id(team_id)
+
+    list_game_headers = []
+
+    # get the home score and away score for each game
+    for game in results:
+        game_id = game[0]
+        game_record = get_game_by_id(game_id)
+        game_details = game_record[5]
+        game_details = json_to_game_details(game_details)
+        
+        home_team_id = game_record[2] # index 1
+        away_team_id = game_record[3] # index 2
+
+        home_team_name = get_team_by_id(home_team_id)[1] # index 3
+        away_team_name = get_team_by_id(away_team_id)[1] # index 4
+        homeScore = game_details["home_score"] # index 5
+        awayScore = game_details["away_score"] # index 6
+        game_date = game_record[4] # index 7
+        game_date = game_date.strftime("%Y-%m-%d %H:%M:%S")
+        game_date = datetime.datetime.strptime(game_date, "%Y-%m-%d %H:%M:%S")
+
+        game_headers = [game_id, home_team_id, away_team_id, home_team_name, away_team_name, homeScore, awayScore, game_date]
+        list_game_headers.append(game_headers)
+
+    return templates.TemplateResponse("results.html", {"request": request, "results": results, "game_headers": list_game_headers, "team_id": team_id, "team": team})
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

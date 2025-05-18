@@ -5,30 +5,42 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container">
-    <h2>{{ league[1] }} Standings</h2>
-    <h3>Season {{ league[2] }}</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Wins</th>
-          <th>Losses</th>
-          <th>Points For</th>
-          <th>Points Against</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for team in standings %}
-          <tr>
-            <td>{{ team[1] }}</td>
-            <td>{{ team[10] }}</td>
-            <td>{{ team[11] }}</td>
-            <td>{{ team[12] }}</td>
-            <td>{{ team[13] }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h2 class="mb-0 text-center">{{ league[1] }} Standings</h2>
+            <h5 class="mb-0 text-center">Season {{ league[2] }}</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Team</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Points For</th>
+                    <th>Points Against</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for team in standings %}
+                    <tr>
+                      <td class="fw-bold">{{ team[1] }}</td>
+                      <td class="text-success">{{ team[10] }}</td>
+                      <td class="text-danger">{{ team[11] }}</td>
+                      <td>{{ team[12] }}</td>
+                      <td>{{ team[13] }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}

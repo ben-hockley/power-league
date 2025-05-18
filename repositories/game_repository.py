@@ -25,3 +25,14 @@ def get_game_by_id(game_id: int):
         return row
     else:
         return None
+    
+def get_games_by_team_id(team_id: int):
+    """
+    Get all games for a specific team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM games WHERE home_team_id = ? OR away_team_id = ?", (team_id, team_id))
+    rows = cur.fetchall()
+    conn.close()
+    return rows
