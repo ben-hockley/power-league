@@ -80,3 +80,27 @@ def get_team_league_id(team_id: int):
         return row[0]
     else:
         return None
+    
+def add_result_to_team(team_id: int, points_for: str, points_against: int):
+    """
+    Add a result to a team in the database.
+    """
+
+    if points_for > points_against:
+        result = "W"
+    elif points_for < points_against:
+        result = "L"
+    else:
+        result = "T"
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    if result == "W":
+        cur.execute("UPDATE teams SET wins = wins + 1, points_for = points_for + ?, points_against = points_against + ? WHERE id = ?", (points_for, points_against, team_id))
+    elif result == "L":
+        cur.execute("UPDATE teams SET losses = losses + 1, points_for = points_for + ?, points_against = points_against + ? WHERE id = ?", (points_for, points_against, team_id))
+    else: # american football games cant end in a tie, but I haven't applied that to the game engine yet, need to do this.
+        cur.execute("UPDATE teams SET points_for = points_for + ?, points_against = points_against + ? WHERE id = ?", (points_for, points_against, team_id))
+    conn.commit()
+    conn.close()

@@ -19,6 +19,7 @@
                 <thead class="table-dark">
                   <tr>
                     <th>Team</th>
+                    <th>Played</th>
                     <th>Wins</th>
                     <th>Losses</th>
                     <th>Points For</th>
@@ -29,6 +30,7 @@
                   {% for team in standings %}
                     <tr>
                       <td class="fw-bold">{{ team[1] }}</td>
+                      <td>{{ team[10]|int + team[11]|int }}</td>
                       <td class="text-success">{{ team[10] }}</td>
                       <td class="text-danger">{{ team[11] }}</td>
                       <td>{{ team[12] }}</td>

@@ -10,7 +10,7 @@ import datetime
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team
 from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
 from starlette.middleware.sessions import SessionMiddleware
@@ -253,6 +253,14 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
     game_details = game_record[5]
     game_details = json_to_game_details(game_details)
 
+    # get the home score and away score for the game
+    homeScore = game_details["home_score"]
+    awayScore = game_details["away_score"]
+
+    # add the result to the teams
+    add_result_to_team(home_team_id, homeScore, awayScore)
+    add_result_to_team(away_team_id, awayScore, homeScore)
+
     # load the game details
     GameDetails = game_details
 
@@ -260,6 +268,9 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
 
 @app.get("/game_details/{game_id}", response_class=HTMLResponse)
 async def game_details(request: Request, game_id: int):
+
+    # this endpoint does not need to check for user ownership, as it is only used to view the game details.
+    # this will allow users to share a link of a game with friends, who are not logged in.
     game_record = get_game_by_id(game_id)
     game_details = game_record[5]
     game_details = json_to_game_details(game_details)
