@@ -81,6 +81,46 @@
                         </div>
                     </form>
                 </div>
+                <!-- Generate League Schedule Section -->
+                <div class="mb-4">
+                    <h3 class="text-center text-info">Generate League Schedule</h3>
+                    <form id="generateScheduleForm" class="card card-body shadow-sm">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-10">
+                                <label for="scheduleLeagueSelect" class="form-label">Select League</label>
+                                <select class="form-select" id="scheduleLeagueSelect" name="scheduleLeagueSelect" required>
+                                    <option value="" disabled selected>Select League</option>
+                                    {% for league in leagues %}
+                                        <option value="{{ league[0] }}">{{ league[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" id="generateScheduleBtn" class="btn btn-info w-100">Generate</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- Generate Draft Class Section -->
+                <div class="mb-4">
+                    <h3 class="text-center text-success">Generate Draft Class</h3>
+                    <form id="generateDraftForm" class="card card-body shadow-sm">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-10">
+                                <label for="draftLeagueSelect" class="form-label">Select League</label>
+                                <select class="form-select" id="draftLeagueSelect" name="draftLeagueSelect" required>
+                                    <option value="" disabled selected>Select League</option>
+                                    {% for league in leagues %}
+                                        <option value="{{ league[0] }}">{{ league[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" id="generateDraftBtn" class="btn btn-success w-100">Generate</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

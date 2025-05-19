@@ -127,6 +127,11 @@ def wipe_league_records(league_id: int):
         (league_id,)
     )
     conn.commit()
+    cur.execute(
+        "DELETE FROM games WHERE league_id = ?",
+        (league_id,)
+    )
+    conn.commit()
     conn.close()
 
 def delete_team(team_id: int):

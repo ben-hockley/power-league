@@ -410,21 +410,25 @@ async def get_admin(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request, "leagues": leagues, "teams": teams})
 
 # ages a league by by one year and updates their skill accordingly
+# this is one step in the process of initializing a new league season
 @app.get("/age_league_players/{league_id}", response_class=HTMLResponse)
 async def age_league(request: Request, league_id: int):
     age_league_players(league_id)
     return RedirectResponse(url=f"/admin", status_code=303)
 
+# this is one step in the process of initializing a new league season
 @app.get("/create_draft_class/{league_id}")
 async def add_draft_class(request: Request, league_id: int):
     create_draft_class(league_id)
     return RedirectResponse(url="/admin", status_code=303)
 
+# this is also one step in the process of initializing a new league season
 @app.get("/generate_schedule/{league_id}")
 async def generate_league_schedule(request: Request, league_id: int):
     generate_schedule(league_id)
     return RedirectResponse(url="/admin", status_code=303)
 
+# this is also one step in the process of initializing a new league season
 @app.get("/wipe_league_records/{league_id}")
 async def wipe_the_league_records(request: Request, league_id: int):
     # wipe the league records
