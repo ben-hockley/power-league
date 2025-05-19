@@ -81,7 +81,7 @@ def get_team_league_id(team_id: int):
     else:
         return None
     
-def add_result_to_team(team_id: int, points_for: str, points_against: int):
+def add_result_to_team(team_id: int, points_for: int, points_against: int):
     """
     Add a result to a team in the database.
     """
