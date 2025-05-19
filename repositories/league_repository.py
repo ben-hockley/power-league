@@ -60,3 +60,17 @@ def get_all_leagues():
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_league_year(leagueId: int):
+    """
+    Get the league year for a specific league ID from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT league_year FROM leagues WHERE id = ?", (leagueId,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None

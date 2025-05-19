@@ -466,6 +466,12 @@ def simulate_game(homeTeamId: int, awayTeamId: int):
                 game.punt()
     print("")
     print("END OF GAME")
+
+    if game.homeScore == game.awayScore:
+        print("TIE GAME")
+        print("Overtime rules apply.")
+        play_overtime(game)
+    
     print("Score: ")
     print(game.homeTeam.team_name + " " + str(game.homeScore))
     print(game.awayTeam.team_name + " " + str(game.awayScore))
@@ -600,3 +606,75 @@ def json_to_game_details(json_data):
         "report": data["report"]
     }
     return game_details
+
+def play_overtime(game):
+    """
+    Simulate overtime: each team gets one possession from their own 25.
+    If still tied, repeat until a winner is determined.
+    """
+    print("OVERTIME BEGINS")
+    max_overtimes = 10  # safety to prevent infinite loops
+    ot_count = 0
+    while game.homeScore == game.awayScore and ot_count < max_overtimes:
+        ot_count += 1
+        print(f"--- Overtime Period {ot_count} ---")
+        # Home team possession
+        print(f"{game.homeTeam.team_name} starts overtime possession.")
+        game.possession = game.homeTeam
+        game.defending = game.awayTeam
+        game.down = 1
+        game.yardsToTd = 75
+        game.yardsToDown = 10
+        game.clock = 300  # 5 minutes for each OT possession
+        while game.down < 4 and game.yardsToTd > 0 and game.clock > 0:
+            game.exec_play()
+            game.print_game_status()
+        home_ot_score = 0
+        if game.yardsToTd <= 0:
+            print(f"{game.homeTeam.team_name} scores a TOUCHDOWN in overtime!")
+            home_ot_score = 7
+            game.homeScore += 7
+        elif game.down == 4 and game.yardsToTd < 50:
+            print(f"{game.homeTeam.team_name} attempts a field goal in overtime.")
+            before = game.homeScore
+            game.field_goal_attempt()
+            home_ot_score = game.homeScore - before
+        else:
+            print(f"{game.homeTeam.team_name} fails to score in overtime.")
+
+        # Away team possession
+        print(f"{game.awayTeam.team_name} starts overtime possession.")
+        game.possession = game.awayTeam
+        game.defending = game.homeTeam
+        game.down = 1
+        game.yardsToTd = 75
+        game.yardsToDown = 10
+        game.clock = 300
+        while game.down < 4 and game.yardsToTd > 0 and game.clock > 0:
+            game.exec_play()
+            game.print_game_status()
+        away_ot_score = 0
+        if game.yardsToTd <= 0:
+            print(f"{game.awayTeam.team_name} scores a TOUCHDOWN in overtime!")
+            away_ot_score = 7
+            game.awayScore += 7
+        elif game.down == 4 and game.yardsToTd < 50:
+            print(f"{game.awayTeam.team_name} attempts a field goal in overtime.")
+            before = game.awayScore
+            game.field_goal_attempt()
+            away_ot_score = game.awayScore - before
+        else:
+            print(f"{game.awayTeam.team_name} fails to score in overtime.")
+
+        print(f"Overtime Period {ot_count} Result: {game.homeTeam.team_name} {game.homeScore}, {game.awayTeam.team_name} {game.awayScore}")
+
+        # If not tied, declare winner
+        if game.homeScore != game.awayScore:
+            print("OVERTIME WINNER!")
+            if game.homeScore > game.awayScore:
+                print(f"{game.homeTeam.team_name} wins in overtime!")
+            else:
+                print(f"{game.awayTeam.team_name} wins in overtime!")
+            break
+        else:
+            print("Still tied after this overtime. Another overtime will be played.")

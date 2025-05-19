@@ -8,9 +8,9 @@ import json
 import datetime
 
 from repositories.user_repository import create_user, check_password, get_user_id
-from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams
+from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
 from starlette.middleware.sessions import SessionMiddleware
@@ -85,6 +85,18 @@ async def create_account(request: Request):
     # Check if the user already exists
     create_user(username, password)
     return RedirectResponse(url="/login", status_code=303)
+
+@app.get("/delete_team/{team_id}", response_class=HTMLResponse)
+async def delete_user_team(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    # delete the team from the database
+    delete_team(team_id)
+
+    # redirect to the home page
+    user_id = get_current_user(request)
+    return RedirectResponse(url=f"/home/{user_id}", status_code=303)
 
 @app.get("/depth_chart_offense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart(request: Request, team_id: int):
@@ -284,6 +296,8 @@ async def get_results(request: Request, team_id: int):
     team = get_team_by_id(team_id)
 
     results = get_games_by_team_id(team_id)
+    # display the results latest first
+    results = sorted(results, key=lambda x: x[4], reverse=True)
 
     list_game_headers = []
 
@@ -310,6 +324,25 @@ async def get_results(request: Request, team_id: int):
 
     return templates.TemplateResponse("results.html", {"request": request, "results": results, "game_headers": list_game_headers, "team_id": team_id, "team": team})
 
+@app.get("/draft/{team_id}", response_class=HTMLResponse)
+async def get_draft(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    team = get_team_by_id(team_id)
+
+    league_id = get_team_league_id(team_id)
+    league = get_league(league_id)
+    league_year = get_league_year(league_id)
+
+    draft_order = get_standings(league_id)
+    # reverse the order of the standings, so the team in last picks first
+    draft_order = sorted(draft_order, key=lambda x: (x[10], x[12]), reverse=True)
+
+    # get the draft class for the team
+    draft_class = get_draft_class(league_id, league_year)
+    
+    return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year})
 
 ### ADMIN PAGES ###
 
@@ -329,6 +362,20 @@ async def get_admin(request: Request):
 async def age_league(request: Request, league_id: int):
     age_league_players(league_id)
     return RedirectResponse(url=f"/admin", status_code=303)
+
+@app.get("/create_draft_class/{league_id}")
+async def add_draft_class(request: Request, league_id: int):
+    create_draft_class(league_id)
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.get("/wipe_league_records/{league_id}")
+async def wipe_the_league_records(request: Request, league_id: int):
+    # wipe the league records
+
+    wipe_league_records(league_id)
+
+    return RedirectResponse(url="/admin", status_code=303)
 
 # simulates a game between two teams, applies the results to the teams, and saves the game to the database.
 @app.get("/match_report/{home_team_id}/{away_team_id}")

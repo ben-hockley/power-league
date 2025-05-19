@@ -1,0 +1,4 @@
+.scrollable-table {
+      max-height: 65vh;
+      overflow-y: auto;
+    }

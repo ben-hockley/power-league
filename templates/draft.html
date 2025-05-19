@@ -1,0 +1,83 @@
+{% extends "template.html" %}
+
+{% block head %}
+  <title>Draft Prospects</title>
+  <link rel="stylesheet" href="/static/css/draft.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">{{ league[1] }} Draft {{ league_year }} Prospects</h1>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0 text-center">Draft Prospects</h2>
+                </div>
+                <div class="card-body scrollable-table">
+                    {% if draft_class %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered align-middle" id="roster-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Name</th>
+                                    <th data-sort-method="number">Age</th>
+                                    <th data-sort-method="number">Draft Year</th>
+                                    <th data-sort-method="number">Skill</th>
+                                    <th>Position</th>
+                                    <th data-sort-method="number">Draft Pick</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player in draft_class %}
+                                <tr>
+                                    <td class="fw-bold">{{ player[1] }} {{ player[2] }}</td>
+                                    <td>{{ player[3] }}</td>
+                                    <td>{{ player[4] }}</td>
+                                    <td>{{ player[6] }}</td>
+                                    <td>{{ player[7] }}</td>
+                                    <td class="fw-bold">{{ player[5] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="alert alert-info text-center mb-0">
+                            No draft prospects available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0 text-center">Provisional Draft Order<br><small class="text-white-50">5 Rounds</small></h4>
+                </div>
+                <div class="card-body scrollable-table">
+                    {% if draft_order %}
+                        <ol class="list-group list-group-numbered">
+                            {% for round in range(5) %}
+                                {% for team in draft_order %}
+                                    <li class="list-group-item">
+                                        Round {{ round+1 }}, Pick {{ loop.index }}: {{ team[1] }}
+                                    </li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ol>
+                    {% else %}
+                        <div class="alert alert-info text-center mb-0">
+                            No draft order available.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/roster.js"></script>
+{% endblock %}

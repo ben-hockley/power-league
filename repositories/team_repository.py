@@ -115,3 +115,41 @@ def get_all_teams():
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def wipe_league_records(league_id: int):
+    """
+    Set wins, losses, points_for, and points_against to 0 for all teams in the given league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE teams SET wins = 0, losses = 0, points_for = 0, points_against = 0 WHERE league_id = ?",
+        (league_id,)
+    )
+    conn.commit()
+    conn.close()
+
+def delete_team(team_id: int):
+    """
+    Delete a team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Delete the team from the teams table
+    cur.execute("DELETE FROM teams WHERE id = ?", (team_id,))
+    conn.commit()
+    # Delete all the team's players from the players table
+    cur.execute("DELETE FROM players WHERE team_id = ?", (team_id,))
+    conn.commit()
+    conn.close()
+
+def get_standings(league_id: int):
+    """
+    Get the standings for a specific league from the database, order first by wins, then by points_for, then by points_against (descending).
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM teams WHERE league_id = ? ORDER BY wins DESC, points_for DESC, points_against ASC", (league_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows

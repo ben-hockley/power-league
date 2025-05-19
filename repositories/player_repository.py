@@ -1,4 +1,5 @@
 from repositories.database import get_db_connection
+from repositories.league_repository import get_league_year
 from data.names import get_random_fname, get_random_lname
 import random
 
@@ -169,8 +170,8 @@ def create_random_player(teamId: int, position: str):
     team_id = teamId
     f_name = get_random_fname()
     l_name = get_random_lname()
-    age = random.randint(20, 35)
-    draft_year = 2025 - age + 20 + random.randint(0, 5)
+    age = random.randint(21, 35)
+    draft_year = 2024 - age + 21
     draft_pick = random.randint(1, 200)
     skill = random.randint(3,15)
 
@@ -275,7 +276,7 @@ def age_league_players(leagueId: int):
             if age is None or skill is None: # skip these players, shouldnt be in the final version
                 continue
             # if the player is under 26, increase their skill by between 0 and 2
-            if age < 26:
+            elif age < 26:
                 skill += random.randint(0, 2)
                 # if the player is over 30, decrease their skill by between 0 and 2
             elif age > 30:
@@ -292,5 +293,62 @@ def age_league_players(leagueId: int):
             conn.commit()
     conn.close()
 
+def create_draft_class(league_id: int):
+    """
+    Create a draft class for the given league.
+    Inserts 6x the number of teams in the league as new players, all aged 21, draft_year 2025,
+    team_id 0, and random skill between 1 and 10. Positions are assigned proportionally:
+    - 1/22 QB, 2/22 RB, 3/22 WR, 5/22 OL, 4/22 DL, 3/22 LB, 4/22 DB
+    """
 
-    
+    # Proportional lineup spots (sum to 22)
+    position_weights = [
+        ("QB", 1),
+        ("RB", 2),
+        ("WR", 3),
+        ("OL", 5),
+        ("DL", 4),
+        ("LB", 3),
+        ("DB", 4)
+    ]
+    positions = []
+    for pos, count in position_weights:
+        positions.extend([pos] * count)
+    # positions is now a list of 22 items, e.g. ["QB", "RB", "RB", "WR", "WR", "WR", ...]
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Get number of teams in league
+    cur.execute("SELECT COUNT(*) FROM teams WHERE league_id = ?", (league_id,))
+    num_teams = cur.fetchone()[0]
+    num_players = num_teams * 6
+
+    league_year = get_league_year(league_id)
+
+    for _ in range(num_players):
+        f_name = get_random_fname()
+        l_name = get_random_lname()
+        age = 21
+        draft_year = league_year
+        draft_pick = None  # Not drafted yet
+        skill = random.randint(1, 10)
+        position = random.choice(positions)
+        team_id = 0  # Free agent/draft pool
+
+        cur.execute(
+            "INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_draft_class(league_id: int, league_year: int):
+    """
+    Get the draft class for the given league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM players WHERE draft_year = ? AND league_id = ?", (league_year, league_id))
+    rows = cur.fetchall()
+    conn.close()
+    return rows
