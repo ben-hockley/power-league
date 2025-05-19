@@ -291,6 +291,20 @@ def age_league_players(leagueId: int):
             # update the player's skill and age in the database
             cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
             conn.commit()
+
+            # if a player is 34 or older, 50% chance of retiring
+            if age >= 34 and random.random() < 0.5:
+                # remove the player from the team
+                cur.execute("UPDATE players SET team_id = 0 WHERE id = ?", (player_id,))
+                conn.commit()
+                # remove the player from the depth chart
+                position = get_player_by_id(player_id)[7]
+                depth_chart_string = get_depth_chart_string(team_id, position)
+                if depth_chart_string is not None:
+                    depth_chart_list = depth_chart_string.split(",")
+                    depth_chart_list.remove(str(player_id))
+                    new_depth_chart_string = ",".join(depth_chart_list)
+                    save_depth_chart(team_id, position, new_depth_chart_string)
     conn.close()
 
 def create_draft_class(league_id: int):
