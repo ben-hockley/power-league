@@ -9,7 +9,7 @@ import datetime
 
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
@@ -344,6 +344,26 @@ async def get_draft(request: Request, team_id: int):
     
     return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year})
 
+@app.get("/fixtures/{team_id}", response_class=HTMLResponse)
+async def load_fixtures(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    team = get_team_by_id(team_id)
+
+    league_id = get_team_league_id(team_id)
+    league = get_league(league_id)
+
+    fixtures = get_fixtures(team_id)
+    fixtureInfo = []
+    for fixture in fixtures:
+        home_team_name = get_team_by_id(fixture[2])
+        away_team_name = get_team_by_id(fixture[3])
+        date = fixture[4]
+        fixtureInfo.append([home_team_name[1], away_team_name[1], date])
+
+    return templates.TemplateResponse("fixtures.html", {"request": request, "fixtures": fixtureInfo, "team_id": team_id, "team": team, "league": league})
+
 ### ADMIN PAGES ###
 
 @app.get("/admin", response_class=HTMLResponse)
@@ -368,6 +388,10 @@ async def add_draft_class(request: Request, league_id: int):
     create_draft_class(league_id)
     return RedirectResponse(url="/admin", status_code=303)
 
+@app.get("/generate_schedule/{league_id}")
+async def generate_league_schedule(request: Request, league_id: int):
+    generate_schedule(league_id)
+    return RedirectResponse(url="/admin", status_code=303)
 
 @app.get("/wipe_league_records/{league_id}")
 async def wipe_the_league_records(request: Request, league_id: int):
