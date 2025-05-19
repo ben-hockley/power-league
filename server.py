@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -7,9 +8,12 @@ import uvicorn
 import json
 import datetime
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
@@ -18,8 +22,36 @@ from config import SECRET_KEY
 from config import SERVER_HOST
 
 from simulator import get_match_report, game_details_to_json, json_to_game_details
+
+def simulate_todays_fixtures():
+    """
+    Simulate today's fixtures and save the results to the database.
+    """
+    # Get today's date
+    today = datetime.date.today()
+
+    # Get all fixtures for today
+    fixtures = get_today_fixtures()
+
+    # Simulate each fixture
+    for fixture in fixtures:
+        home_team_id = int(fixture[2])
+        print(home_team_id)
+        away_team_id = int(fixture[3])
+        print(away_team_id)
+        match_report_no_link(home_team_id, away_team_id)
+        # Delete the fixture from the database
+        delete_fixture(fixture[0])
+
+
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+# Ensure the scheduler shuts down properly on application exit.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    scheduler.shutdown()
 
 # Set up Jinja2 templates directory
 templates = Jinja2Templates(directory="templates")
@@ -430,5 +462,43 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
     return RedirectResponse(url="/admin", status_code=303)
 
 ### END OF ADMIN PAGES ###
+
+def match_report_no_link(home_team_id: int, away_team_id: int):
+    GameDetails = get_match_report(home_team_id, away_team_id)
+
+    # save data to the database
+    league_id = get_team_league_id(home_team_id)
+    details_json = game_details_to_json(GameDetails)
+
+    game_id = save_game(league_id, home_team_id, away_team_id, details_json)
+
+    game_record = get_game_by_id(game_id)
+    game_details = game_record[5]
+    game_details = json_to_game_details(game_details)
+
+    # get the home score and away score for the game
+    homeScore = game_details["home_score"]
+    awayScore = game_details["away_score"]
+
+    # add the result to the teams
+    add_result_to_team(home_team_id, homeScore, awayScore)
+    add_result_to_team(away_team_id, awayScore, homeScore)
+
+    # load the game details
+    GameDetails = game_details
+
+    return None
+
+import os
+
+# Only start the scheduler in the main process (not in the reload watcher)
+# this is to guard against multiple schedulers loading
+if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
+    scheduler = BackgroundScheduler()
+    trigger = CronTrigger(hour=12, minute=00) # simulate games every day at midday
+    scheduler.add_job(simulate_todays_fixtures, trigger, misfire_grace_time=3600)
+    print("Scheduler started")
+    scheduler.start()
+
 if __name__ == "__main__":
-    uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)
+    uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=False)

@@ -195,3 +195,15 @@ def delete_fixture(fixtureId: int):
     cur.execute("DELETE FROM fixtures WHERE id = ?", (fixtureId,))
     conn.commit()
     conn.close()
+
+def get_today_fixtures():
+    """
+    Get all fixtures for today from the database.
+    """
+    today = date.today()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM fixtures WHERE date = ?", (today,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows
