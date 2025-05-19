@@ -438,8 +438,13 @@ async def new_season(request: Request, league_id: int):
     # 4. generate a schedule
     # 5. wipe the league records
 
-    new_season(league_id)
+
+    
+    # do this before the draft so players can retire so users know where the gaps in their roster are.
+    # also so draft prospects dont get aged.
     age_league_players(league_id)
+    # do the draft here.
+    new_season(league_id)
     create_draft_class(league_id)
     generate_schedule(league_id)
     wipe_league_records(league_id)

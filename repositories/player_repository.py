@@ -1,5 +1,6 @@
 from repositories.database import get_db_connection
 from repositories.league_repository import get_league_year
+from avatars import random_football_avatar
 from data.names import get_random_fname, get_random_lname
 import random
 
@@ -187,6 +188,9 @@ def create_random_player(teamId: int, position: str):
         depth_chart_string += f",{cur.lastrowid}"
     else:
         depth_chart_string = str(cur.lastrowid)
+    
+    # generate the player's avatar
+    random_football_avatar(cur.lastrowid)
 
     conn.close()
     save_depth_chart(teamId, position, depth_chart_string)
@@ -353,6 +357,7 @@ def create_draft_class(league_id: int):
             "INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id)
         )
+        random_football_avatar(cur.lastrowid)  # Generate avatar for the player
     conn.commit()
     conn.close()
 
@@ -366,3 +371,14 @@ def get_draft_class(league_id: int, league_year: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_all_player_ids():
+    """
+    Get all player IDs from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM players")
+    rows = cur.fetchall()
+    conn.close()
+    return [row[0] for row in rows]

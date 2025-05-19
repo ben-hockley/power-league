@@ -46,3 +46,14 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+document.querySelectorAll('.player-name-hover').forEach(function(td) {
+    td.addEventListener('mouseenter', function() {
+        const img = td.querySelector('.player-avatar-hover');
+        if (img) img.style.display = 'block';
+    });
+    td.addEventListener('mouseleave', function() {
+        const img = td.querySelector('.player-avatar-hover');
+        if (img) img.style.display = 'none';
+    });
+});
