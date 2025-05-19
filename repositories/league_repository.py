@@ -207,3 +207,13 @@ def get_today_fixtures():
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def new_season(leagueId: int):
+    """
+    Start a new season for a specific league ID.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE leagues SET league_year = league_year + 1, season_number = season_number + 1  WHERE id = ?", (leagueId,))
+    conn.commit()
+    conn.close()

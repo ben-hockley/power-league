@@ -43,3 +43,12 @@ document.getElementById('generateDraftBtn').addEventListener('click', function()
         alert('Please select a league.');
     }
 });
+
+document.getElementById('newSeasonBtn').addEventListener('click', function() {
+    const leagueId = document.getElementById('newSeasonLeagueSelect').value;
+    if (leagueId) {
+        window.location.href = `/new_season/${leagueId}`;
+    } else {
+        alert('Please select a league.');
+    }
+});

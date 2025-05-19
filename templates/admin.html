@@ -121,6 +121,26 @@
                         </div>
                     </form>
                 </div>
+                <!-- Start New Season Section -->
+                <div class="mb-4">
+                    <h3 class="text-center text-primary">Start New Season</h3>
+                    <form id="newSeasonForm" class="card card-body shadow-sm">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-10">
+                                <label for="newSeasonLeagueSelect" class="form-label">Select League</label>
+                                <select class="form-select" id="newSeasonLeagueSelect" name="newSeasonLeagueSelect" required>
+                                    <option value="" disabled selected>Select League</option>
+                                    {% for league in leagues %}
+                                        <option value="{{ league[0] }}">{{ league[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" id="newSeasonBtn" class="btn btn-primary w-100">Start</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

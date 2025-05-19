@@ -13,7 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 
@@ -427,6 +427,26 @@ async def add_draft_class(request: Request, league_id: int):
 async def generate_league_schedule(request: Request, league_id: int):
     generate_schedule(league_id)
     return RedirectResponse(url="/admin", status_code=303)
+
+# you should do the draft before, as this will make a new draft class.
+@app.get("/new_season/{league_id}")
+async def new_season(request: Request, league_id: int):
+    # this is the process of initializing a new league season
+    # 1. increase the league year and season number by 1
+    # 2. age the players
+    # 3. create a draft class
+    # 4. generate a schedule
+    # 5. wipe the league records
+
+    new_season(league_id)
+    age_league_players(league_id)
+    create_draft_class(league_id)
+    generate_schedule(league_id)
+    wipe_league_records(league_id)
+
+    return RedirectResponse(url="/admin", status_code=303)
+
+
 
 # this is also one step in the process of initializing a new league season
 @app.get("/wipe_league_records/{league_id}")
