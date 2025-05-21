@@ -1,8 +1,6 @@
 import random
 import python_avatars as pa
 
-from repositories.player_repository import get_all_player_ids
-
 def random_football_avatar(player_id: int):
     hair_types = [
         pa.HairType.CAESAR,

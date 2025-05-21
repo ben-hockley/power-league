@@ -4,6 +4,31 @@ from avatars import random_football_avatar
 from data.names import get_random_fname, get_random_lname
 import random
 
+def add_player_to_depth_chart(teamId: int, playerId: int):
+    """
+    Add a player to the depth chart for a specific team and position.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Get the player's position
+    cur.execute("SELECT position FROM players WHERE id = ?", (playerId,))
+    row = cur.fetchone()[0]
+    if row:
+        position = row.lower()
+        col_name = f"depth_{position}"
+        # Get the current depth chart for the position
+        cur.execute(f"SELECT {col_name} FROM teams WHERE id = ?", (teamId,))
+        depth_chart_string = str(cur.fetchone()[0])
+        # Add the player ID to the depth chart string
+        if depth_chart_string:
+            depth_chart_string += f",{playerId}"
+        else:
+            depth_chart_string = str(playerId)
+        # Update the depth chart in the database
+        cur.execute(f"UPDATE teams SET {col_name} = ? WHERE id = ?", (depth_chart_string, teamId))
+        conn.commit()
+    conn.close()
+
 def get_players(teamId):
     """
     Get players from the database for a given team ID.

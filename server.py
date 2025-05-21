@@ -13,9 +13,10 @@ from apscheduler.triggers.cron import CronTrigger
 
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
+from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick, check_draft_active, get_picking_team_id
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
@@ -367,14 +368,49 @@ async def get_draft(request: Request, team_id: int):
     league = get_league(league_id)
     league_year = get_league_year(league_id)
 
-    draft_order = get_standings(league_id)
-    # reverse the order of the standings, so the team in last picks first
-    draft_order = sorted(draft_order, key=lambda x: (x[10], x[12]), reverse=True)
+    # get the draft order for the league
+    draft_order = get_reverse_standings(league_id)
 
     # get the draft class for the team
     draft_class = get_draft_class(league_id, league_year)
+
+    players_drafted = get_players_drafted(league_id, league_year)
+
+    draft_active = check_draft_active(league_id, league_year)
+
+    # get the team that is currently picking
+    if draft_active:
+        picking_team_id = get_picking_team_id(league_id, league_year)
+        picking_team_name = get_team_by_id(picking_team_id)[1]
+    else:
+        picking_team_id = None
+        picking_team_name = None
     
-    return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year})
+    return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year, "players_drafted": players_drafted, "draft_active": draft_active, "picking_team_id": picking_team_id, "picking_team_name": picking_team_name})
+
+@app.post("/start_draft/{team_id}")
+async def start_draft(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    league_id = get_league_id(team_id)
+    draft_year = get_league_year(league_id)
+
+    # start the draft
+    add_draft(league_id, draft_year)
+
+    return RedirectResponse(url=f"/draft/{team_id}", status_code=303)
+
+@app.post("/make_draft_pick/{team_id}/{player_id}")
+async def draft_player(request: Request, team_id: int, player_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    league_id = get_league_id(team_id)
+    draft_year = get_league_year(league_id)
+
+    # make the draft pick
+    make_draft_pick(league_id, draft_year, player_id)
 
 @app.get("/fixtures/{team_id}", response_class=HTMLResponse)
 async def load_fixtures(request: Request, team_id: int):
