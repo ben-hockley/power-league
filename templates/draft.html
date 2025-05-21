@@ -21,6 +21,10 @@
                         <form id="startDraftForm" method="post" action="/start_draft/{{team_id}}">
                             <button type="submit" class="btn btn-success">Start Draft</button>
                         </form>
+                        {% elif players_drafted|length >= draft_order|length * 5 %}
+                        <div class="alert alert-info fw-bold">
+                            The draft is over!
+                        </div>
                         {% else %}
                         <div class="alert alert-success fw-bold">
                             The draft is active!

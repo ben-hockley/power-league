@@ -294,9 +294,13 @@ def age_league_players(leagueId: int):
     cur.execute("SELECT ID FROM teams WHERE league_id = ?", (leagueId,))
     rows = cur.fetchall()
 
+    # get the league year
+    league_year = get_league_year(leagueId)
+    last_year = league_year - 1 # this is the draft year for the rookies (dont age the rookies)
+
     teams_ids = [row[0] for row in rows]
     for team_id in teams_ids:
-        cur.execute("SELECT * FROM players WHERE team_id = ?", (team_id,))
+        cur.execute("SELECT * FROM players WHERE team_id = ? AND draft_year != ?", (team_id, last_year))
         players = cur.fetchall()
         for player in players:
             player_id = player[0]

@@ -381,7 +381,14 @@ async def get_draft(request: Request, team_id: int):
     # get the team that is currently picking
     if draft_active:
         picking_team_id = get_picking_team_id(league_id, league_year)
-        picking_team_name = get_team_by_id(picking_team_id)[1]
+        if picking_team_id:
+            team_obj = get_team_by_id(picking_team_id)
+            if team_obj:
+                picking_team_name = team_obj[1]
+            else:
+                picking_team_name = None
+        else:
+            picking_team_name = None
     else:
         picking_team_id = None
         picking_team_name = None
@@ -466,18 +473,21 @@ async def generate_league_schedule(request: Request, league_id: int):
 
 # you should do the draft before, as this will make a new draft class.
 @app.get("/new_season/{league_id}")
-async def new_season(request: Request, league_id: int):
+async def start_new_season(request: Request, league_id: int):
     # this is the process of initializing a new league season
     # 1. increase the league year and season number by 1
+    new_season(league_id)
     # 2. age the players
+    age_league_players(league_id)
     # 3. create a draft class
+    create_draft_class(league_id)
     # 4. generate a schedule
+    generate_schedule(league_id)
     # 5. wipe the league records
+    wipe_league_records(league_id)
 
 
     
-    # do this before the draft so players can retire so users know where the gaps in their roster are.
-    # also so draft prospects dont get aged.
     age_league_players(league_id)
     # do the draft here.
     new_season(league_id)

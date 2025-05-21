@@ -152,7 +152,10 @@ def get_picking_team_id(league_id: int, draft_year: int):
     current_pick = cur.fetchone()[0]
     # get the team id for the current pick
     pick_index = current_pick - 1
-    picking_team = draft_order[pick_index][0]
+    if pick_index >= len(draft_order):
+        picking_team = None
+    else:
+        picking_team = draft_order[pick_index][0]
     return picking_team
 
 def get_last_pick(draft_year: int, league_id: int):
