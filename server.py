@@ -24,6 +24,27 @@ from config import SERVER_HOST
 
 from simulator import get_match_report, game_details_to_json, json_to_game_details
 
+# ...existing code...
+from fastapi import WebSocket, WebSocketDisconnect
+from typing import List
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
+
 def simulate_todays_fixtures():
     """
     Simulate today's fixtures and save the results to the database.
@@ -47,6 +68,15 @@ def simulate_todays_fixtures():
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+
+@app.websocket("/ws/draft")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()  # Keep the connection open
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 # Ensure the scheduler shuts down properly on application exit.
 @asynccontextmanager
@@ -406,6 +436,9 @@ async def start_draft(request: Request, team_id: int):
     # start the draft
     add_draft(league_id, draft_year)
 
+    # Notify all clients to reload
+    await manager.broadcast("reload")
+
     return RedirectResponse(url=f"/draft/{team_id}", status_code=303)
 
 @app.post("/make_draft_pick/{team_id}/{player_id}")
@@ -418,6 +451,9 @@ async def draft_player(request: Request, team_id: int, player_id: int):
 
     # make the draft pick
     make_draft_pick(league_id, draft_year, player_id)
+
+    # Notify all clients to reload
+    await manager.broadcast("reload")
 
 @app.get("/fixtures/{team_id}", response_class=HTMLResponse)
 async def load_fixtures(request: Request, team_id: int):

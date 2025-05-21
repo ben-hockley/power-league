@@ -156,4 +156,12 @@ document.querySelectorAll('.draft-btn').forEach(function(btn) {
 });
 {% endif %}
 </script>
+<script>
+    const ws = new WebSocket(`ws://${window.location.host}/ws/draft`);
+    ws.onmessage = function(event) {
+        if (event.data === "reload") {
+            window.location.reload();
+        }
+    };
+</script>
 {% endblock %}
