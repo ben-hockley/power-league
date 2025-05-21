@@ -156,6 +156,7 @@ document.querySelectorAll('.draft-btn').forEach(function(btn) {
 });
 {% endif %}
 </script>
+<!-- Web sockets to automatically update page when a draft pick is made by ANY user -->
 <script>
     const ws = new WebSocket(`ws://${window.location.host}/ws/draft`);
     ws.onmessage = function(event) {
