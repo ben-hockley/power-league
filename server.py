@@ -1,11 +1,10 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-import json
 import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -282,6 +281,10 @@ async def get_league_free_agents(request: Request, team_id: int):
 
 @app.post("/sign_player/{team_id}")
 async def sign_player_to_team(request: Request, team_id: int):
+
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+    
     form = await request.form()
     player_id = form.get("player_id")
 
@@ -523,6 +526,7 @@ async def load_fixtures(request: Request, team_id: int):
 async def get_admin(request: Request):
     # add authentification for admin users here, do this later.
     # for now, just return the admin page
+    
 
     # get all leagues from the database
     leagues = get_all_leagues()
