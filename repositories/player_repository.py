@@ -233,6 +233,12 @@ def fill_new_team(teamId: int):
     """
     Fill a new team with random players.
     """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT league_id FROM teams WHERE id = ?", (teamId,))
+    league_id = cur.fetchone()[0]
+    conn.close()
+
     create_random_player(teamId, "QB")
     create_random_player(teamId, "QB")
 
@@ -274,10 +280,36 @@ def fill_new_team(teamId: int):
     create_random_player(teamId, "DB")
     create_random_player(teamId, "DB")
     create_random_player(teamId, "DB")
+
+    # create some free agents to add to the league
+    for i in range(5):
+        create_free_agent_player(league_id)
 
     # Sort all depth charts after filling the team
     clean_all_depth_charts(teamId)
     sort_all_depth_charts(teamId)
+
+def create_free_agent_player(leagueId: int):
+    """
+    Create a new free agent player in the database.
+    """
+    league_year = get_league_year(leagueId)
+    f_name = get_random_fname()
+    l_name = get_random_lname()
+    age = random.randint(21, 35)
+    draft_year = league_year - random.randint(0, 15)
+    draft_pick = None
+    skill = random.randint(1, 10)
+    position = random.choice(["QB", "RB","RB", "WR","WR","WR", "OL","OL","OL","OL","OL", "DL","DL","DL","DL", "LB","LB","LB", "DB","DB","DB","DB"])
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, 0, leagueId))
+    
+    conn.commit()
+    random_football_avatar(cur.lastrowid)  # Generate avatar for the player
+    conn.close()
 
 def get_players_by_team(teamId: int):
     """
