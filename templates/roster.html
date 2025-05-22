@@ -8,8 +8,13 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0 text-center">Team Roster</h2>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0 text-center flex-grow-1">Team Roster</h2>
+                    {% set roster_size = players|length %}
+                    <span id="roster-size"
+                        class="fw-bold ms-3 {% if roster_size >= 53 %}text-danger{% else %}text-white{% endif %}">
+                        {{ roster_size }}/53
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -22,6 +27,7 @@
                                     <th data-sort-method="number">Draft Pick</th>
                                     <th>Position</th>
                                     <th data-sort-method="number">Skill</th>
+                                    <th>Cut</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -36,6 +42,9 @@
                                     <td>{{ player[5] }}</td>
                                     <td>{{ player[7] }}</td>
                                     <td class="fw-bold">{{ player[6] }}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm cut-btn" data-player-id="{{ player[0] }}" data-player-name="{{ player[1] }} {{ player[2] }}">Cut</button>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -50,4 +59,25 @@
 
 {% block scripts %}
 <script src="/static/js/roster.js"></script>
+<script>
+document.querySelectorAll('.cut-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        const playerName = btn.getAttribute('data-player-name');
+        const playerId = btn.getAttribute('data-player-id');
+        if (confirm(`Are you sure you want to cut ${playerName}?`)) {
+            // Create and submit a form dynamically
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/cut_player/{{team_id}}';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'player_id';
+            input.value = playerId;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+});
+</script>
 {% endblock %}

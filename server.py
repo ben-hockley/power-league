@@ -12,7 +12,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from repositories.user_repository import create_user, check_password, get_user_id
-from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
+from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class, get_free_agents, cut_player, sign_player
 from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
@@ -238,7 +238,20 @@ async def get_roster(request: Request, team_id: int):
 
     players = get_players_by_team(team_id)
 
+    roster_size = len(players)
+
     return templates.TemplateResponse("roster.html", {"request": request, "players": players, "team_id": team_id, "team": team})
+
+@app.post("/cut_player/{team_id}")
+async def roster_cut_player(request: Request, team_id: int):
+    form = await request.form()
+    player_id = form.get("player_id")
+
+    # cut the player from the team
+    cut_player(player_id)
+
+    return RedirectResponse(url=f"/roster/{team_id}", status_code=303)
+
 
 @app.get("/standings/{team_id}", response_class=HTMLResponse)
 async def get_league_table(request: Request, team_id: int):
@@ -254,6 +267,28 @@ async def get_league_table(request: Request, team_id: int):
     standings = get_standings(league_id)
 
     return templates.TemplateResponse("standings.html", {"request": request, "standings": standings, "league": league, "team_id": team_id, "team": team})
+
+@app.get("/freeagents/{team_id}", response_class=HTMLResponse)
+async def get_league_free_agents(request: Request, team_id: int):
+    if not check_user_ownership(request, team_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    team = get_team_by_id(team_id)
+
+    league_id = get_team_league_id(team_id)
+    free_agents = get_free_agents(league_id)
+
+    return templates.TemplateResponse("free_agents.html", {"request": request, "players": free_agents, "team_id": team_id, "team": team})
+
+@app.post("/sign_player/{team_id}")
+async def sign_player_to_team(request: Request, team_id: int):
+    form = await request.form()
+    player_id = form.get("player_id")
+
+    # sign the player to the team
+    sign_player(player_id, team_id)
+
+    return RedirectResponse(url=f"/freeagents/{team_id}", status_code=303)
 
 @app.get("/home/{user_id}", response_class=HTMLResponse)
 async def get_home(request: Request, user_id: int):

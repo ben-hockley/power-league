@@ -201,7 +201,7 @@ def create_random_player(teamId: int, position: str):
     cur.execute("SELECT league_id FROM teams WHERE id = ?", (teamId,))
     league_id = cur.fetchone()[0]
     conn.close()
-    
+
     f_name = get_random_fname()
     l_name = get_random_lname()
     age = random.randint(21, 35)
@@ -333,10 +333,10 @@ def age_league_players(leagueId: int):
             cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
             conn.commit()
 
-            # if a player is 34 or older, 50% chance of retiring
-            if age >= 34 and random.random() < 0.5:
+            # if a player is 34 or older, 30% chance of retiring
+            if age >= 34 and random.random() < 0.7:
                 # remove the player from the team
-                cur.execute("UPDATE players SET team_id = 0 WHERE id = ?", (player_id,))
+                cur.execute("UPDATE players SET team_id = 0, league_id = 0 WHERE id = ?", (player_id,))
                 conn.commit()
                 # remove the player from the depth chart
                 position = get_player_by_id(player_id)[7]
@@ -419,3 +419,54 @@ def get_all_player_ids():
     rows = cur.fetchall()
     conn.close()
     return [row[0] for row in rows]
+
+def get_free_agents(league_id: int):
+    """
+    Get all free agents in the league (remove rookies who are still in college)
+    """
+    league_year = get_league_year(league_id)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT * FROM players WHERE team_id = 0 AND league_id = ? AND draft_year != ?",
+        (league_id, league_year)
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+
+def cut_player(player_id: int):
+    """
+    Cut a player from the team.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # remove the player from the depth chart
+    position = get_player_by_id(player_id)[7]
+    team_id = get_player_by_id(player_id)[8]
+    depth_chart_string = get_depth_chart_string(team_id, position)
+    if depth_chart_string is not None:
+        depth_chart_list = depth_chart_string.split(",")
+        depth_chart_list.remove(str(player_id))
+        new_depth_chart_string = ",".join(depth_chart_list)
+        save_depth_chart(team_id, position, new_depth_chart_string)
+
+    conn.commit()
+    # update the player's team_id to 0 (free agent)
+    cur.execute("UPDATE players SET team_id = 0 WHERE id = ?", (player_id,))
+    conn.commit()
+
+    conn.close()
+
+def sign_player(player_id: int, team_id: int):
+    """
+    Sign a player to a team.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE players SET team_id = ? WHERE id = ?", (team_id, player_id))
+    conn.commit()
+    # add the player to the depth chart
+    add_player_to_depth_chart(team_id, player_id)
+    conn.close()
