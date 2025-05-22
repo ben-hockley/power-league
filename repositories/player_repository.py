@@ -208,7 +208,7 @@ def create_random_player(teamId: int, position: str):
     age = random.randint(21, 35)
     draft_year = 2024 - age + 21
     draft_pick = random.randint(1, 200)
-    skill = random.randint(3,15)
+    skill = random.randint(1,10) + random.randint(0, 2) * (min(age, 26) - 21)
 
     conn = get_db_connection()
     cur = conn.cursor()
