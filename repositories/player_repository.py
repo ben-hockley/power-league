@@ -3,6 +3,7 @@ from repositories.league_repository import get_league_year
 from avatars import random_football_avatar
 from data.names import get_random_fname, get_random_lname
 import random
+import os
 
 def add_player_to_depth_chart(teamId: int, playerId: int):
     """
@@ -297,14 +298,53 @@ def age_league_players(leagueId: int):
     """
     Age all players in the league by 1 year.
     """
+     # get the league year
+    league_year = get_league_year(leagueId)
+    last_year = league_year - 1
+
+    # get all the non rookie free agents in the league
     conn = get_db_connection()
     cur = conn.cursor()
+    cur.execute("SELECT * FROM players WHERE league_id = ? AND team_id = 0 AND draft_year != ?", (leagueId, last_year))
+    rows = cur.fetchall()
+    for player in rows:
+        player_id = player[0]
+        age = player[3]
+        skill = player[6]
+        if age is None or skill is None: # skip these players, shouldnt be in the final version
+            continue
+        # if the player is under 26, increase their skill by between 0 and 2
+        elif age < 26:
+            skill += random.randint(0, 2)
+            # if the player is over 30, decrease their skill by between 0 and 2
+        elif age > 30:
+            skill -= random.randint(0, 2)
+            # if the player is between 26 and 30, increase their skill by between -1 and 1
+        else:
+            skill += random.randint(-1, 1)
+
+        # age the player by 1 year
+        age += 1
+
+        # update the player's skill and age in the database
+        cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
+        conn.commit()
+        if age >= 34 and random.random() > 0.7:
+            # delete the player from the database
+            cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
+            conn.commit()
+            # delete the player's avatar from the avatars folder
+            try:
+                os.remove(f"static/avatars/{player_id}.svg")
+            except FileNotFoundError:
+                pass
+        
+
+
+
     cur.execute("SELECT ID FROM teams WHERE league_id = ?", (leagueId,))
     rows = cur.fetchall()
 
-    # get the league year
-    league_year = get_league_year(leagueId)
-    last_year = league_year - 1 # this is the draft year for the rookies (dont age the rookies)
 
     teams_ids = [row[0] for row in rows]
     for team_id in teams_ids:
@@ -334,7 +374,7 @@ def age_league_players(leagueId: int):
             conn.commit()
 
             # if a player is 34 or older, 30% chance of retiring
-            if age >= 34 and random.random() < 0.7:
+            if age >= 34 and random.random() > 0.7:
                 # remove the player from the team
                 cur.execute("UPDATE players SET team_id = 0, league_id = 0 WHERE id = ?", (player_id,))
                 conn.commit()
@@ -346,6 +386,14 @@ def age_league_players(leagueId: int):
                     depth_chart_list.remove(str(player_id))
                     new_depth_chart_string = ",".join(depth_chart_list)
                     save_depth_chart(team_id, position, new_depth_chart_string)
+                # delete the player from the database
+                cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
+                conn.commit()
+                # delete the player's avatar from the avatars folder
+                try:
+                    os.remove(f"static/avatars/{player_id}.svg")
+                except FileNotFoundError:
+                    pass
     conn.close()
 
 def create_draft_class(league_id: int):
@@ -461,7 +509,7 @@ def cut_player(player_id: int):
 
 def sign_player(player_id: int, team_id: int):
     """
-    Sign a player to a team.
+    Sign a player to a team. (From free agency)
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -470,3 +518,15 @@ def sign_player(player_id: int, team_id: int):
     # add the player to the depth chart
     add_player_to_depth_chart(team_id, player_id)
     conn.close()
+
+def delete_player(player_id: int):
+    """
+    Delete a player from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
+    conn.commit()
+    conn.close()
+    # delete the players avatar from the avatars folder
+    os.remove(f"static/avatars/{player_id}.svg")
