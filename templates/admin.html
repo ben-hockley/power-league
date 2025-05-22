@@ -141,6 +141,33 @@
                         </div>
                     </form>
                 </div>
+                <!-- Create League Section -->
+                <div class="mb-4">
+                    <h3 class="text-center text-success">Create New League</h3>
+                    <form method="post" action="/create_league" class="card card-body shadow-sm">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-4">
+                                <label for="league_name" class="form-label">League Name</label>
+                                <input type="text" class="form-control" id="league_name" name="league_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="league_year" class="form-label">League Year</label>
+                                <input type="number" class="form-control" id="league_year" name="league_year" required>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-center">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="is_public" name="is_public">
+                                    <label class="form-check-label" for="is_public">
+                                        Public League
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100">Create</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

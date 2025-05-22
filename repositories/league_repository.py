@@ -228,3 +228,13 @@ def new_season(leagueId: int):
     cur.execute("UPDATE leagues SET league_year = league_year + 1, season_number = season_number + 1  WHERE id = ?", (leagueId,))
     conn.commit()
     conn.close()
+
+def create_league(league_name: str, league_year: int, is_public: bool):
+    """
+    Create a new league in the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public) VALUES (?, ?, ?, ?)", (league_name, 1, league_year, is_public))
+    conn.commit()
+    conn.close()

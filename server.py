@@ -13,10 +13,10 @@ from apscheduler.triggers.cron import CronTrigger
 
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
-from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick, check_draft_active, get_picking_team_id
+from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick, check_draft_active, get_picking_team_id, get_time_on_clock
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
@@ -408,6 +408,13 @@ async def get_draft(request: Request, team_id: int):
 
     draft_active = check_draft_active(league_id, league_year)
 
+    if draft_active:
+        time_on_clock: datetime.timedelta = get_time_on_clock(league_id, league_year)
+        # convert the time on clock to a string
+        time_on_clock = int(time_on_clock.total_seconds())
+    else:
+        time_on_clock = None
+
     # get the team that is currently picking
     if draft_active:
         picking_team_id = get_picking_team_id(league_id, league_year)
@@ -423,7 +430,7 @@ async def get_draft(request: Request, team_id: int):
         picking_team_id = None
         picking_team_name = None
     
-    return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year, "players_drafted": players_drafted, "draft_active": draft_active, "picking_team_id": picking_team_id, "picking_team_name": picking_team_name})
+    return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year, "players_drafted": players_drafted, "draft_active": draft_active, "picking_team_id": picking_team_id, "picking_team_name": picking_team_name, "time_on_clock": time_on_clock})
 
 @app.post("/start_draft/{team_id}")
 async def start_draft(request: Request, team_id: int):
@@ -517,12 +524,10 @@ async def start_new_season(request: Request, league_id: int):
     age_league_players(league_id)
     # 3. create a draft class
     create_draft_class(league_id)
-    # 4. generate a schedule
-    generate_schedule(league_id)
-    # 5. wipe the league records
+    # 4.wipe the league records
     wipe_league_records(league_id)
-
-
+    # 5. generate a new schedule
+    generate_schedule(league_id)
     
     age_league_players(league_id)
     # do the draft here.
@@ -572,6 +577,17 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
 
     return RedirectResponse(url="/admin", status_code=303)
 
+@app.post("/create_league")
+async def create_new_league(request: Request):
+    form = await request.form()
+    league_name = form.get("league_name")
+    league_year = form.get("league_year")
+    is_public = 1 if form.get("is_public") == "on" else 0  # 1 for True, 0 for False
+
+    # create a new league in the database
+    create_league(league_name, league_year, is_public)
+
+    return RedirectResponse(url="/admin", status_code=303)
 ### END OF ADMIN PAGES ###
 
 def match_report_no_link(home_team_id: int, away_team_id: int):
@@ -612,4 +628,4 @@ if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
     scheduler.start()
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=False)
+    uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)

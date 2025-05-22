@@ -201,3 +201,18 @@ def get_players_drafted(league_id: int, draft_year: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_time_on_clock(league_id: int, draft_year: int):
+    """
+    Get the time left on the clock for a given league and draft year.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT pick_deadline FROM drafts WHERE league_id = ? AND year = ?",
+        (league_id, draft_year)
+    )
+    pick_deadline = cur.fetchone()[0]
+    time_left = pick_deadline - datetime.now()
+    conn.close()
+    return time_left

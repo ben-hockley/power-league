@@ -61,7 +61,7 @@ def create_new_team(user_id: int, team_name: str, league_id: int):
     """
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO teams (user_id, team_name, league_id) VALUES (?, ?, ?)", (user_id, team_name, league_id))
+    cur.execute("INSERT INTO teams (user_id, team_name, league_id, wins, losses, points_for, points_against) VALUES (?, ?, ?, ?, ?, ?, ?)", (user_id, team_name, league_id, 0, 0, 0, 0))
     conn.commit()
     team_id = cur.lastrowid
     conn.close()
@@ -131,6 +131,8 @@ def wipe_league_records(league_id: int):
         "DELETE FROM games WHERE league_id = ?",
         (league_id,)
     )
+    conn.commit()
+    cur.execute("DELETE FROM fixtures WHERE league_id = ?", (league_id,))
     conn.commit()
     conn.close()
 

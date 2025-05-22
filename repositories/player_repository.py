@@ -194,6 +194,14 @@ def create_random_player(teamId: int, position: str):
     """
 
     team_id = teamId
+
+    # Get the league ID for the team
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT league_id FROM teams WHERE id = ?", (teamId,))
+    league_id = cur.fetchone()[0]
+    conn.close()
+    
     f_name = get_random_fname()
     l_name = get_random_lname()
     age = random.randint(21, 35)
@@ -203,8 +211,8 @@ def create_random_player(teamId: int, position: str):
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id))
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id))
     
     conn.commit()
     # Update the depth chart for the position
