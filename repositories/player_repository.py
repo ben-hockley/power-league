@@ -296,8 +296,8 @@ def create_free_agent_player(leagueId: int):
     league_year = get_league_year(leagueId)
     f_name = get_random_fname()
     l_name = get_random_lname()
-    age = random.randint(21, 35)
     draft_year = league_year - random.randint(0, 15)
+    age = league_year - draft_year + 21
     draft_pick = None
     skill = random.randint(1, 10)
     position = random.choice(["QB", "RB","RB", "WR","WR","WR", "OL","OL","OL","OL","OL", "DL","DL","DL","DL", "LB","LB","LB", "DB","DB","DB","DB"])
@@ -358,6 +358,9 @@ def age_league_players(leagueId: int):
         # age the player by 1 year
         age += 1
 
+        skill = max(1, skill)  # Ensure skill doesn't go below 1
+        skill = min(20, skill)
+
         # update the player's skill and age in the database
         cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
         conn.commit()
@@ -400,6 +403,9 @@ def age_league_players(leagueId: int):
 
             # age the player by 1 year
             age += 1
+
+            skill = max(1, skill)  # Ensure skill doesn't go below 1
+            skill = min(20, skill)  # Ensure skill doesn't go above 20
 
             # update the player's skill and age in the database
             cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
