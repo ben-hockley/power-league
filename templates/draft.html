@@ -30,6 +30,7 @@
                     <div class="mb-3 text-center">
                         {% if not draft_active %}
                         <form id="startDraftForm" method="post" action="/start_draft/{{team_id}}">
+                            <!-- this button is just for testing, the draft should really be started by the schedule at a pre-determined date and time that is made clear to the user.-->
                             <button type="submit" class="btn btn-success">Start Draft</button>
                         </form>
                         {% elif players_drafted|length >= draft_order|length * 5 %}
