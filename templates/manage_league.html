@@ -1,0 +1,33 @@
+{% extends "user_template.html" %}
+{% block head %}
+  <title>Manage League</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Manage League: {{ league[1] }}</h1>
+    <p>League ID: {{ league[0] }}</p>
+    <p>Season Number: {{ league[2] }}</p>
+    <p>Year: {{ league[4] }}</p>
+    <p>Public League: {{ 'Yes' if league[3] else 'No' }}</p>
+    <p>Number of teams : {{ teams|length }}</p>
+</div>
+<div class="container mt-5">
+    <h2>Teams in League</h2>
+    {% if teams %}
+        <ul class="list-group">
+            {% for team in teams %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="/team/{{ team[0] }}">{{ team[1] }}</a>
+                        <span class="badge bg-secondary ms-2">Record: {{ team[10] }} - {{ team[11] }}</span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <li class="list-group-item">No teams found in this league.</li>
+    {% endif %}
+    <a href="/create_team/{{user_id}}" class="btn btn-success btn-lg w-100 mt-3">Create New Team</a>
+{% endblock %}

@@ -190,3 +190,14 @@ def order_depth_charts(league_id: int):
             cur.execute(f"UPDATE teams SET {depth_chart_name} = ? WHERE id = ?", (depth_chart_string, team_id))
             conn.commit()
     conn.close()
+
+def get_teams_by_league_id(league_id: int):
+    """
+    Get all teams for a specific league from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM teams WHERE league_id = ?", (league_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows

@@ -238,3 +238,38 @@ def create_league(league_name: str, league_year: int, is_public: bool):
     cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public) VALUES (?, ?, ?, ?)", (league_name, 1, league_year, is_public))
     conn.commit()
     conn.close()
+
+def get_owned_leagues(user_id: int):
+    """
+    Get all leagues owned by a specific user from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM leagues WHERE admin_id = ?", (user_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+
+def get_league_owner_id(league_id: int):
+    """
+    Get the owner ID for a specific league from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT admin_id FROM leagues WHERE id = ?", (league_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None
+    
+def save_new_league(league_name: str, league_year: int, is_public: bool, admin_id: int):
+    """
+    Save a new league to the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public, admin_id) VALUES (?, ?, ?, ?, ?)", (league_name, 1, league_year, is_public, admin_id))
+    conn.commit()
+    conn.close()

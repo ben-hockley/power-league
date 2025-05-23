@@ -22,10 +22,31 @@
             </button>
           </li>
         {% endfor %}
+      </ul>
     {% else %}
-          <li class="list-group-item">No teams found, Create your first team and start managing today!</li>
+      <li class="list-group-item">No teams found, Create your first team and start managing today!</li>
     {% endif %}
     <a href="/create_team/{{user_id}}" class="btn btn-success btn-lg w-100 mt-3">Create New Team</a>
+  </div>
+
+  <!-- Leagues You Own Section -->
+  <div class="container mt-5">
+    <h2>Leagues You Own</h2>
+    {% if owned_leagues %}
+      <ul class="list-group">
+        {% for league in owned_leagues %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="/manage_league/{{ league[0] }}">{{ league[1] }}</a>
+              <span class="badge bg-info ms-2">Year: {{ league[4] }}</span>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="alert alert-info mt-3">You don't own any leagues yet.</div>
+    {% endif %}
+    <a href="/create_new_league/{{user_id}}" class="btn btn-primary btn-lg w-100 mt-3">Create New League</a>
   </div>
 
   <!-- Delete Confirmation Modal -->

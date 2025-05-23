@@ -12,8 +12,8 @@ from apscheduler.triggers.cron import CronTrigger
 
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class, get_free_agents, cut_player, sign_player
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings, order_depth_charts
+from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league, get_owned_leagues, get_league_owner_id, save_new_league
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings, order_depth_charts, get_teams_by_league_id
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick, check_draft_active, get_picking_team_id, get_time_on_clock
 
@@ -322,8 +322,25 @@ async def get_home(request: Request, user_id: int):
         league_id = get_league_id(team[0])
         league = get_league(league_id)
         leagues.append(league)
+
+    owned_leagues = get_owned_leagues(user_id)
     
-    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues, "user_id": user_id})
+    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues, "user_id": user_id, "owned_leagues": owned_leagues})
+
+@app.get("/manage_league/{league_id}", response_class=HTMLResponse)
+async def get_league_management(request: Request, league_id: int):
+    # Check if the user is logged in
+    user_id = get_current_user(request)
+    
+    # Check if the user owns the league
+    if user_id != get_league_owner_id(league_id):
+        return RedirectResponse(url="/login", status_code=303)
+
+    league = get_league(league_id)
+    teams = get_teams_by_league_id(league_id)
+
+    user_id = get_league_owner_id(league_id)
+    return templates.TemplateResponse("manage_league.html", {"request": request, "league": league, "league_id": league_id, "user_id": user_id, "teams": teams})
 
 @app.get("/team/{team_id}", response_class=HTMLResponse)
 async def get_team(request: Request, team_id: int):
@@ -358,6 +375,29 @@ async def post_create_team(request: Request, user_id: int):
     create_new_team(user_id, team_name, league_id)
     
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
+
+@app.get("/create_new_league/{user_id}", response_class=HTMLResponse)
+async def get_create_new_league(request: Request, user_id: int):
+    # Check if the user is logged in
+    if user_id != get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse("create_new_league.html", {"request": request, "user_id": user_id})
+
+@app.post("/create_new_league/{user_id}")
+async def post_create_new_league(request: Request, user_id: int):
+    # Check if the user is logged in
+    if user_id != get_current_user(request):
+        return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    league_name = form.get("league_name")
+    league_year = form.get("league_year")
+    is_public = True if form.get("is_public") == "on" else False
+    # Create a new league in the database
+    save_new_league(league_name, league_year, is_public, user_id)
+    return RedirectResponse(url=f"/home/{user_id}", status_code=303)
+
 
 @app.get("/logout")
 async def logout(request: Request):
