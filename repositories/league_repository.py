@@ -235,7 +235,7 @@ def create_league(league_name: str, league_year: int, is_public: bool):
     """
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public) VALUES (?, ?, ?, ?)", (league_name, 1, league_year, is_public))
+    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public, is_active) VALUES (?, ?, ?, ?, ?)", (league_name, 1, league_year, is_public, 0))
     conn.commit()
     conn.close()
 
@@ -270,6 +270,30 @@ def save_new_league(league_name: str, league_year: int, is_public: bool, admin_i
     """
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public, admin_id) VALUES (?, ?, ?, ?, ?)", (league_name, 1, league_year, is_public, admin_id))
+    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public, admin_id, is_active) VALUES (?, ?, ?, ?, ?, ?)", (league_name, 1, league_year, is_public, admin_id, 0))
     conn.commit()
     conn.close()
+
+def make_league_active(league_id: int):
+    """
+    Make a league active in the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE leagues SET is_active = 1 WHERE id = ?", (league_id,))
+    conn.commit()
+    conn.close()
+
+def get_league_status(league_id: int):
+    """
+    Get the status of a league from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT is_active FROM leagues WHERE id = ?", (league_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None

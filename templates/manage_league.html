@@ -12,6 +12,7 @@
     <p>Year: {{ league[4] }}</p>
     <p>Public League: {{ 'Yes' if league[3] else 'No' }}</p>
     <p>Number of teams : {{ teams|length }}</p>
+    <p>League Status: {{ 'Active' if league[6] == 1 else 'Inactive' }}</p>
 </div>
 <div class="container mt-5">
     <h2>Teams in League</h2>
@@ -30,4 +31,12 @@
         <li class="list-group-item">No teams found in this league.</li>
     {% endif %}
     <a href="/create_team/{{user_id}}" class="btn btn-success btn-lg w-100 mt-3">Create New Team</a>
+    {% if teams|length >= 2 and league[6] == 0 %}
+    <form method="post" action="/activate_league/{{ league[0] }}">
+        <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Activate League</button>
+    </form>
+    {% elif teams|length < 2 and league[6] == 0 %}
+    <div class="alert alert-warning mt-3">You need 2 or more teams to activate the league.</div>
+    {% endif %}
+</div>
 {% endblock %}
