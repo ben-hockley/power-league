@@ -367,15 +367,15 @@ def age_league_players(leagueId: int):
         skill = player[6]
         if age is None or skill is None: # skip these players, shouldnt be in the final version
             continue
-        # if the player is under 26, increase their skill by between 0 and 2
+        # if the player is under 26, increase their skill by between 0 and 3
         elif age < 26:
-            skill += random.randint(0, 2)
+            skill += random.randint(0, 3)
             # if the player is over 30, decrease their skill by between 0 and 2
         elif age > 30:
             skill -= random.randint(0, 2)
-            # if the player is between 26 and 30, increase their skill by between -1 and 1
+            # if the player is between 26 and 30, increase their skill by between -1 and 2
         else:
-            skill += random.randint(-1, 1)
+            skill += random.randint(-1, 2)
 
         # age the player by 1 year
         age += 1
@@ -386,7 +386,7 @@ def age_league_players(leagueId: int):
         # update the player's skill and age in the database
         cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
         conn.commit()
-        if age >= 34 and random.random() > 0.7:
+        if age >= 34 and random.random() > 0.5:
             # delete the player from the database
             cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
             conn.commit()
@@ -415,13 +415,13 @@ def age_league_players(leagueId: int):
                 continue
             # if the player is under 26, increase their skill by between 0 and 2
             elif age < 26:
-                skill += random.randint(0, 2)
+                skill += random.randint(0, 3)
                 # if the player is over 30, decrease their skill by between 0 and 2
             elif age > 30:
                 skill -= random.randint(0, 2)
                 # if the player is between 26 and 30, increase their skill by between -1 and 1
             else:
-                skill += random.randint(-1, 1)
+                skill += random.randint(-1, 2)
 
             # age the player by 1 year
             age += 1
@@ -433,8 +433,8 @@ def age_league_players(leagueId: int):
             cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
             conn.commit()
 
-            # if a player is 34 or older, 30% chance of retiring
-            if age >= 34 and random.random() > 0.7:
+            # if a player is 34 or older, 50% chance of retiring
+            if age >= 34 and random.random() > 0.5:
                 # remove the player from the team
                 cur.execute("UPDATE players SET team_id = 0, league_id = 0 WHERE id = ?", (player_id,))
                 conn.commit()
