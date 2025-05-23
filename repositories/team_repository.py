@@ -160,3 +160,33 @@ def get_standings(league_id: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def order_depth_charts(league_id: int):
+    """
+    Order the depth charts by player skill for all teams in a specific league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM teams WHERE league_id = ?", (league_id,))
+    team_ids = cur.fetchall()
+
+    positions = ["QB", "RB", "WR", "OL", "DL", "LB", "DB"]
+    
+    for team_id in team_ids:
+        team_id = team_id[0]
+        for position in positions:
+            cur.execute("SELECT * FROM players WHERE team_id = ? AND position = ? ORDER BY position", (team_id, position))
+            players = cur.fetchall()
+            # order the players by skill (descending)
+            players = sorted(players, key=lambda x: x[6], reverse=True)
+            # update the depth chart
+            depth_chart_string = ""
+            for player in players:
+                if depth_chart_string == "":
+                    depth_chart_string = str(player[0])
+                else:
+                    depth_chart_string += "," + str(player[0])
+            depth_chart_name = "depth_" + position.lower()
+            cur.execute(f"UPDATE teams SET {depth_chart_name} = ? WHERE id = ?", (depth_chart_string, team_id))
+            conn.commit()
+    conn.close()

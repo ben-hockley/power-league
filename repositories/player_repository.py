@@ -229,6 +229,28 @@ def create_random_player(teamId: int, position: str):
     conn.close()
     save_depth_chart(teamId, position, depth_chart_string)
 
+def create_player(teamId: int, age: int, draft_year: int, skill: int, position: str):
+    """
+    Create a new player in the database.
+    """
+    f_name = get_random_fname()
+    l_name = get_random_lname()
+    draft_pick = None
+    conn = get_db_connection()
+    # Get the league ID for the team
+    cur = conn.cursor()
+    cur.execute("SELECT league_id FROM teams WHERE id = ?", (teamId,))
+    league_id = cur.fetchone()[0]
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, teamId, league_id))
+    
+    conn.commit()
+    random_football_avatar(cur.lastrowid)  # Generate avatar for the player
+    conn.close()
+
 def fill_new_team(teamId: int):
     """
     Fill a new team with random players.
@@ -432,6 +454,39 @@ def age_league_players(leagueId: int):
                     os.remove(f"static/avatars/{player_id}.svg")
                 except FileNotFoundError:
                     pass
+    #conn.close()
+
+    # following retirements, if any team has under the minimum number of players at any position, add 1 skill rookies to their team.
+    # get the league year
+    league_year = get_league_year(leagueId)
+    last_year = league_year - 1
+    
+    for team_id in teams_ids:
+        cur.execute("SELECT * FROM players WHERE team_id = ? AND draft_year != ?", (team_id, last_year))
+        players = cur.fetchall()
+        # check if the team has at least 2 QBs, 4 RBs, 5 WRs, 8 OLs, 6 DLs, 5 LBs, and 6 DBs
+        num_qbs = len([p for p in players if p[7] == "QB"])
+        num_rbs = len([p for p in players if p[7] == "RB"])
+        num_wrs = len([p for p in players if p[7] == "WR"])
+        num_ols = len([p for p in players if p[7] == "OL"])
+        num_dls = len([p for p in players if p[7] == "DL"])
+        num_lbs = len([p for p in players if p[7] == "LB"])
+        num_dbs = len([p for p in players if p[7] == "DB"])
+
+        if num_qbs < 2:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "QB")
+        if num_rbs < 3:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "RB")
+        if num_wrs < 4:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "WR")
+        if num_ols < 6:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "OL")
+        if num_dls < 5:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "DL")
+        if num_lbs < 4:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "LB")
+        if num_dbs < 5:
+            create_player(team_id, 21, last_year, random.randint(1, 3), "DB")
     conn.close()
 
 def create_draft_class(league_id: int):
@@ -490,7 +545,7 @@ def get_draft_class(league_id: int, league_year: int):
     """
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM players WHERE draft_year = ? AND league_id = ?", (league_year, league_id))
+    cur.execute("SELECT * FROM players WHERE draft_year = ? AND league_id = ? ORDER BY skill DESC", (league_year, league_id))
     rows = cur.fetchall()
     conn.close()
     return rows

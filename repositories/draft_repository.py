@@ -82,10 +82,18 @@ def make_draft_pick(league_id: int, draft_year: int, player_id: int):
         (datetime.now() + timedelta(minutes=5), league_id, draft_year)
     )
     conn.commit()
-    conn.close()
 
     # add the player to the depth chart of the team
     add_player_to_depth_chart(team_id, player_id)
+
+    # if it is the last pick of the draft, set the draft to inactive
+    if current_pick >= len(draft_order):
+        cur.execute(
+            "UPDATE drafts SET is_active = ? WHERE league_id = ? AND year = ?",
+            (0, league_id, draft_year)
+        )
+        conn.commit()
+    conn.close()
 
     
 

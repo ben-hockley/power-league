@@ -13,7 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from repositories.user_repository import create_user, check_password, get_user_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class, get_free_agents, cut_player, sign_player
 from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings, order_depth_charts
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick, check_draft_active, get_picking_team_id, get_time_on_clock
 
@@ -44,12 +44,13 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-def simulate_todays_fixtures():
+def simulate_todays_fixtures(today: datetime.date = None):
     """
     Simulate today's fixtures and save the results to the database.
     """
     # Get today's date
-    today = datetime.date.today()
+    if today is None:
+        today = datetime.date.today()
 
     # Get all fixtures for today
     fixtures = get_today_fixtures()
@@ -63,6 +64,21 @@ def simulate_todays_fixtures():
         match_report_no_link(home_team_id, away_team_id)
         # Delete the fixture from the database
         delete_fixture(fixture[0])
+
+def start_new_season_no_link(league_id: int):
+    # this is the process of initializing a new league season
+    # 1. increase the league year and season number by 1
+    new_season(league_id)
+    # 2. age the players
+    age_league_players(league_id)
+    # 3. create a draft class
+    create_draft_class(league_id)
+    # 4.wipe the league records
+    wipe_league_records(league_id)
+    # 5. generate a new schedule
+    generate_schedule(league_id)
+    # 6. order the depth charts in order of skill
+    order_depth_charts(league_id)
 
 
 app = FastAPI()
@@ -500,6 +516,11 @@ async def draft_player(request: Request, team_id: int, player_id: int):
     # Notify all clients to reload
     await manager.broadcast("reload")
 
+    # if the draft is over, start a new season
+    if check_draft_active(league_id, draft_year) == False:
+        # start a new season
+        start_new_season_no_link(league_id)
+
 @app.get("/fixtures/{team_id}", response_class=HTMLResponse)
 async def load_fixtures(request: Request, team_id: int):
     if not check_user_ownership(request, team_id):
@@ -559,7 +580,7 @@ async def start_new_season(request: Request, league_id: int):
     # this is the process of initializing a new league season
     # 1. increase the league year and season number by 1
     new_season(league_id)
-    # 2. age the players
+    # 2. age the players (also handles retirements)
     age_league_players(league_id)
     # 3. create a draft class
     create_draft_class(league_id)
@@ -567,13 +588,8 @@ async def start_new_season(request: Request, league_id: int):
     wipe_league_records(league_id)
     # 5. generate a new schedule
     generate_schedule(league_id)
-    
-    age_league_players(league_id)
-    # do the draft here.
-    new_season(league_id)
-    create_draft_class(league_id)
-    generate_schedule(league_id)
-    wipe_league_records(league_id)
+    # 6. order the depth charts in order of skill
+    order_depth_charts(league_id)
 
     return RedirectResponse(url="/admin", status_code=303)
 
@@ -627,6 +643,17 @@ async def create_new_league(request: Request):
     create_league(league_name, league_year, is_public)
 
     return RedirectResponse(url="/admin", status_code=303)
+
+# use this to trigger the start of a new league after teams have been added to a new league setup.
+@app.post("/start_new_league")
+async def start_new_league(request: Request):
+    form = await request.form()
+    league_id = form.get("league_id")
+    generate_schedule(league_id)
+    create_draft_class(league_id)
+    order_depth_charts(league_id)
+    return RedirectResponse(url="/admin", status_code=303)
+
 ### END OF ADMIN PAGES ###
 
 def match_report_no_link(home_team_id: int, away_team_id: int):
