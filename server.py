@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 
 import datetime
+import string
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -17,7 +18,8 @@ cut_player, sign_player, get_star_players
 from repositories.league_repository import get_standings, get_league, get_league_id,\
 get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures,\
 get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league,\
-get_owned_leagues, get_league_owner_id, save_new_league, make_league_active
+get_owned_leagues, get_league_owner_id, save_new_league, make_league_active, record_new_champion, \
+get_reigning_champion_name, get_number_of_championships, get_user_championships_won
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id,\
 create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
 delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
@@ -31,7 +33,6 @@ from config import SERVER_HOST
 
 from simulator import get_match_report, game_details_to_json, json_to_game_details
 
-# ...existing code...
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import List
 
@@ -75,6 +76,8 @@ def simulate_todays_fixtures(today: datetime.date = None):
 
 def start_new_season_no_link(league_id: int):
     # this is the process of initializing a new league season
+    # 1 . record the new champion of the league
+    record_new_champion(league_id)
     # 1. increase the league year and season number by 1
     new_season(league_id)
     # 2. age the players
@@ -427,6 +430,17 @@ async def get_team(request: Request, team_id: int):
 
     manager_id = get_manager_id(team_id)
     manager = get_user_by_id(manager_id)
+
+    league = get_league(get_team_league_id(team_id))
+
+    reigning_champion = get_reigning_champion_name(league[0])
+    if reigning_champion:
+        reigning_champion = ''.join(c for c in str(reigning_champion) if c not in string.punctuation)
+    else:
+        reigning_champion = reigning_champion
+
+    number_of_championships = get_number_of_championships(team_id)
+    user_championships = get_user_championships_won(team_id)
     return templates.TemplateResponse("team_home.html", {"request": request, 
                                                          "team_id": team_id, 
                                                          "team": team, 
@@ -439,7 +453,11 @@ async def get_team(request: Request, team_id: int):
                                                          "next_home_team": next_home_team, 
                                                          "next_away_team": next_away_team, 
                                                          "star_players": star_players, 
-                                                         "manager": manager})
+                                                         "manager": manager,
+                                                         "league": league,
+                                                         "reigning_champion": reigning_champion,
+                                                         "number_of_championships": number_of_championships,
+                                                         "user_championships": user_championships})
 
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int):

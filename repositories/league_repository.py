@@ -297,3 +297,122 @@ def get_league_status(league_id: int):
         return row[0]
     else:
         return None
+    
+def add_champion(league_id: int, team_id: int):
+    """
+    Add a champion to the league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT champions FROM leagues WHERE id = ?", (league_id,))
+    row = cur.fetchone()
+    if row:
+        champions = row[0]
+        if champions:
+            champions = f"{champions},{team_id}"
+        else:
+            champions = str(team_id)
+        cur.execute("UPDATE leagues SET champions = ? WHERE id = ?", (champions, league_id))
+    else:
+        champions = str(team_id)
+        cur.execute("UPDATE leagues SET champions = ? WHERE id = ?", (champions, league_id))
+    conn.commit()
+    conn.close()
+
+def get_champions_ids(league_id: int):
+    """
+    Get the champions of a league, returns a list of team IDs.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT champions FROM leagues WHERE id = ?", (league_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row and row[0]:
+        return [int(champion) for champion in row[0].split(',')]
+    else:
+        return []
+
+def get_champions_names(league_id: int):
+    """
+    Get the champions of a league, returns a list of team names.
+    """
+    champions_ids = get_champions_ids(league_id)
+    if not champions_ids:
+        return []
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT team_name FROM teams WHERE id IN ({})".format(','.join('?' * len(champions_ids))), champions_ids)
+    rows = cur.fetchall()
+    conn.close()
+    
+    return [row[0] for row in rows]
+
+def get_reigning_champion_name(league_id: int):
+    """
+    Get the reigning champion of a league.
+    Returns the team name of the reigning champion.
+    """
+    champions_ids = get_champions_ids(league_id)
+    if not champions_ids:
+        return None
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT team_name FROM teams WHERE id = ?", (champions_ids[-1],))
+    row = cur.fetchone()
+    conn.close()
+    
+    if row:
+        return row
+    else:
+        return None
+
+def get_top_team(leagueId: int):
+    """
+    Get the top team in the standings for a league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT * FROM teams WHERE league_id = ? ORDER BY wins DESC, points_for DESC, points_against ASC LIMIT 1",
+        (leagueId,)
+    )
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+def record_new_champion(leagueId: int):
+    """
+    Record a new champion for a league.
+    """
+    champion = get_top_team(leagueId)
+    champion_id = champion[0]
+    add_champion(leagueId, champion_id)
+
+def get_number_of_championships(teamId: int):
+    """
+    Get the number of championships won by a team in a league.
+    """
+    league_id = get_league_id(teamId)
+    if not league_id:
+        return 0
+    champions_ids = get_champions_ids(league_id)
+    return champions_ids.count(teamId)
+
+def get_user_championships_won(user_id: int):
+    """
+    Get the number of championships won by a user across all leagues.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM teams WHERE user_id = ?", (user_id,))
+    teams = cur.fetchall()
+    total_championships = 0
+    for team in teams:
+        team_id = team[0]
+        championships_won = get_number_of_championships(team_id)
+        total_championships += championships_won
+    conn.close()
+    return total_championships

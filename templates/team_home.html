@@ -14,7 +14,8 @@
           Record: {{ team[10] }} - {{ team[11] }}
         </span>
       </h1>
-      <!-- Add a card for the manager displaying manager name and avatar -->
+      <!-- Manager card -->
+      <a href="/home/{{ team[14] }}" class="text-decoration-none recent-game-link">
       <div class="card shadow mb-4 recent-game-card transition-grow">
         <div class="card-header bg-info text-white">
           Manager
@@ -23,9 +24,37 @@
           <img src="{{ manager[3] }}" alt="Manager Avatar" class="rounded-circle me-3" style="width:64px;height:64px;">
           <div>
             <h5 class="card-title mb-0">{{ manager[1] }}</h5>
+            <p class="card-text mb-1">
+              <strong>Championships Won:</strong> {{ user_championships }}
           </div>
         </div>
-    </div>
+      </div>
+      </a>
+      <!-- League and Season box -->
+      <a href="/standings/{{ team_id }}" class="text-decoration-none recent-game-link">
+      <div class="card shadow mb-4 recent-game-card transition-grow">
+        <div class="card-header bg-secondary text-white">
+          League
+        </div>
+        <div class="card-body">
+          <div class="fw-bold mb-1">
+            League: {{ league[1] }}
+          </div>
+          <div>
+            Current Season: {{ league[2] }}
+          </div>
+          <div>
+            Current Year: {{ league[4] }}
+          </div>
+          <div>
+            Reigning Champions : {{ reigning_champion }}
+          </div>
+          <div>
+            Championships Won: {{ number_of_championships }}
+        </div>
+      </div>
+      </div>
+      </a>
     </div>
     <div class="col-md-4">
       {% if most_recent_game %}

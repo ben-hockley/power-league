@@ -1,0 +1,3 @@
+from repositories.league_repository import get_number_of_championships
+
+print(get_number_of_championships(29))
