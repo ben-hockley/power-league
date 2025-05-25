@@ -623,3 +623,14 @@ def delete_player(player_id: int):
     conn.close()
     # delete the players avatar from the avatars folder
     os.remove(f"static/avatars/{player_id}.svg")
+
+def get_star_players(team_id: int):
+    """
+    Return the three highest rated players from a team.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM players WHERE team_id = ? ORDER BY skill DESC LIMIT 3", (team_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows

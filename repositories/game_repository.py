@@ -36,3 +36,20 @@ def get_games_by_team_id(team_id: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_next_fixture(team_id: int):
+    """
+    Get the next fixture for a specific team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT * FROM fixtures WHERE (home_team_id = ? OR away_team_id = ?) ORDER BY date ASC LIMIT 1",
+        (team_id, team_id)
+    )
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row
+    else:
+        return None

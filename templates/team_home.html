@@ -3,6 +3,96 @@
 {% block head %}
   <title>Home</title>
 {% endblock %}
+
 {% block content %}
-<h1>{{ team[1] }}</h1>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8">
+      <h1>
+        {{ team[1] }}
+        <span class="badge bg-secondary ms-2 fs-5 align-middle">
+          Record: {{ team[10] }} - {{ team[11] }}
+        </span>
+      </h1>
+      <!-- You can add more team info here -->
+    </div>
+    <div class="col-md-4">
+      {% if most_recent_game %}
+      <a href="/results/{{ most_recent_game[0] }}" class="text-decoration-none recent-game-link">
+        <div class="card shadow mb-4 recent-game-card transition-grow">
+          <div class="card-header bg-primary text-white">
+            Most Recent Game
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">
+              {{ most_recent_home_team[1] }} vs {{ most_recent_away_team[1] }}
+            </h5>
+            <p class="card-text mb-1">
+              <strong>Date:</strong> {{ most_recent_game[4] }}
+            </p>
+            <p class="card-text mb-1">
+              <strong>Score:</strong>
+              {{ most_recent_home_team[1] }} {{ most_recent_home_score }} -
+              {{ most_recent_away_score }} {{ most_recent_away_team[1] }}
+            </p>
+          </div>
+        </div>
+      </a>
+      {% endif %}
+
+      {% if next_fixture %}
+      <a href="/fixtures/{{ team_id }}" class="text-decoration-none recent-game-link">
+        <div class="card shadow mb-4 next-match-card transition-grow">
+          <div class="card-header bg-success text-white">
+            Next Match
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">
+              {{ next_home_team[1] }} vs {{ next_away_team[1] }}
+            </h5>
+            <p class="card-text mb-1">
+              <strong>Date:</strong> {{ next_fixture[4] }}
+            </p>
+          </div>
+        </div>
+      </a>
+      {% endif %}
+
+      {% if star_players %}
+      <a href="/roster/{{ team_id }}" class="text-decoration-none recent-game-link">
+        <div class="card shadow mb-4 star-players-card transition-grow">
+          <div class="card-header bg-warning text-dark">
+            Roster
+          </div>
+          <div class="card-body">
+            {% for player in star_players[:3] %}
+            <div class="d-flex align-items-center mb-3">
+              <img src="/static/avatars/{{ player[0] }}.svg" alt="Avatar" class="rounded me-3" style="width:48px;height:48px;border:2px solid #007bff;background:#fff;">
+              <div>
+                <div class="fw-bold">{{ player[1] }} {{ player[2] }}</div>
+                <div class="small text-muted">
+                  Skill: <span class="fw-bold">{{ player[6] }}</span> |
+                  Age: {{ player[3] }} |
+                  Pos: {{ player[7] }}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<style>
+.recent-game-link { display: block; }
+.transition-grow {
+  transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+}
+.transition-grow:hover {
+  transform: scale(1.04);
+  z-index: 2;
+}
+</style>
 {% endblock %}
