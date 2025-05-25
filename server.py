@@ -11,11 +11,19 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from repositories.user_repository import create_user, check_password, get_user_id, get_user_by_id
-from repositories.player_repository import get_depth_chart_by_position, save_depth_chart, get_players_by_team, age_league_players, create_draft_class, get_draft_class, get_free_agents, cut_player, sign_player, get_star_players
-from repositories.league_repository import get_standings, get_league, get_league_id, get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures, get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league, get_owned_leagues, get_league_owner_id, save_new_league, make_league_active
-from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id, create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records, delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
+from repositories.player_repository import get_depth_chart_by_position, save_depth_chart,\
+get_players_by_team, age_league_players, create_draft_class, get_draft_class, get_free_agents,\
+cut_player, sign_player, get_star_players
+from repositories.league_repository import get_standings, get_league, get_league_id,\
+get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures,\
+get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league,\
+get_owned_leagues, get_league_owner_id, save_new_league, make_league_active
+from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id,\
+create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
+delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id, get_next_fixture
-from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick, check_draft_active, get_picking_team_id, get_time_on_clock
+from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick,\
+check_draft_active, get_picking_team_id, get_time_on_clock
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
@@ -148,7 +156,8 @@ async def post_login(request: Request):
         user_id = request.session.get("user_id")
         return RedirectResponse(url=f"/home/{user_id}", status_code=303)
     else:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
+        return templates.TemplateResponse("login.html", {"request": request,
+                                                          "error": "Invalid username or password"})
 
 @app.get("/create_account", response_class=HTMLResponse)
 async def get_create_account(request: Request):
@@ -190,7 +199,13 @@ async def get_depth_chart(request: Request, team_id: int):
     depth_wr = get_depth_chart_by_position(team_id, "WR")
     depth_ol = get_depth_chart_by_position(team_id, "OL")
 
-    return templates.TemplateResponse("depth_chart_offense.html", {"request": request, "depth_qb": depth_qb, "depth_rb": depth_rb, "depth_wr": depth_wr, "depth_ol": depth_ol, "team_id": team_id, "team": team})
+    return templates.TemplateResponse("depth_chart_offense.html", {"request": request,
+                                                                    "depth_qb": depth_qb,
+                                                                    "depth_rb": depth_rb,
+                                                                    "depth_wr": depth_wr,
+                                                                    "depth_ol": depth_ol,
+                                                                    "team_id": team_id,
+                                                                    "team": team})
 
 # save depth chart changes to the database
 @app.post("/depth_chart_offense/{team_id}")
@@ -225,7 +240,12 @@ async def get_depth_chart_defense(request: Request, team_id: int):
     depth_lb = get_depth_chart_by_position(team_id, "LB")
     depth_db = get_depth_chart_by_position(team_id, "DB")
     
-    return templates.TemplateResponse("depth_chart_defense.html", {"request": request, "depth_dl": depth_dl, "depth_lb": depth_lb, "depth_db": depth_db, "team_id": team_id, "team": team})
+    return templates.TemplateResponse("depth_chart_defense.html", {"request": request,
+                                                                   "depth_dl": depth_dl,
+                                                                   "depth_lb": depth_lb, 
+                                                                   "depth_db": depth_db, 
+                                                                   "team_id": team_id, 
+                                                                   "team": team})
 
 # save depth chart changes to the database
 @app.post("/depth_chart_defense/{team_id}")
@@ -256,7 +276,10 @@ async def get_roster(request: Request, team_id: int):
 
     roster_size = len(players)
 
-    return templates.TemplateResponse("roster.html", {"request": request, "players": players, "team_id": team_id, "team": team})
+    return templates.TemplateResponse("roster.html", {"request": request, 
+                                                      "players": players, 
+                                                      "team_id": team_id, 
+                                                      "team": team})
 
 @app.post("/cut_player/{team_id}")
 async def roster_cut_player(request: Request, team_id: int):
@@ -282,7 +305,11 @@ async def get_league_table(request: Request, team_id: int):
     league = get_league(league_id)
     standings = get_standings(league_id)
 
-    return templates.TemplateResponse("standings.html", {"request": request, "standings": standings, "league": league, "team_id": team_id, "team": team})
+    return templates.TemplateResponse("standings.html", {"request": request, 
+                                                         "standings": standings, 
+                                                         "league": league, 
+                                                         "team_id": team_id, 
+                                                         "team": team})
 
 @app.get("/freeagents/{team_id}", response_class=HTMLResponse)
 async def get_league_free_agents(request: Request, team_id: int):
@@ -294,7 +321,10 @@ async def get_league_free_agents(request: Request, team_id: int):
     league_id = get_team_league_id(team_id)
     free_agents = get_free_agents(league_id)
 
-    return templates.TemplateResponse("free_agents.html", {"request": request, "players": free_agents, "team_id": team_id, "team": team})
+    return templates.TemplateResponse("free_agents.html", {"request": request, 
+                                                           "players": free_agents, 
+                                                           "team_id": team_id, 
+                                                           "team": team})
 
 @app.post("/sign_player/{team_id}")
 async def sign_player_to_team(request: Request, team_id: int):
@@ -327,7 +357,12 @@ async def get_home(request: Request, user_id: int):
 
     owned_leagues = get_owned_leagues(user_id)
     
-    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues, "user_id": user_id, "owned_leagues": owned_leagues, "user": user})
+    return templates.TemplateResponse("home.html", {"request": request, 
+                                                    "teams": teams, 
+                                                    "leagues": leagues, 
+                                                    "user_id": user_id, 
+                                                    "owned_leagues": owned_leagues, 
+                                                    "user": user})
 
 @app.get("/manage_league/{league_id}", response_class=HTMLResponse)
 async def get_league_management(request: Request, league_id: int):
@@ -342,7 +377,11 @@ async def get_league_management(request: Request, league_id: int):
     teams = get_teams_by_league_id(league_id)
 
     user_id = get_league_owner_id(league_id)
-    return templates.TemplateResponse("manage_league.html", {"request": request, "league": league, "league_id": league_id, "user_id": user_id, "teams": teams})
+    return templates.TemplateResponse("manage_league.html", {"request": request, 
+                                                             "league": league, 
+                                                             "league_id": league_id, 
+                                                             "user_id": user_id, 
+                                                             "teams": teams})
 
 @app.post("/activate_league/{league_id}")
 async def activate_league(request: Request, league_id: int):
@@ -388,7 +427,19 @@ async def get_team(request: Request, team_id: int):
 
     manager_id = get_manager_id(team_id)
     manager = get_user_by_id(manager_id)
-    return templates.TemplateResponse("team_home.html", {"request": request, "team_id": team_id, "team": team, "most_recent_game": most_recent_game, "most_recent_home_team": most_recent_home_team, "most_recent_away_team": most_recent_away_team, "most_recent_home_score": most_recent_home_score, "most_recent_away_score": most_recent_away_score, "next_fixture": next_fixture, "next_home_team": next_home_team, "next_away_team": next_away_team, "star_players": star_players, "manager": manager})
+    return templates.TemplateResponse("team_home.html", {"request": request, 
+                                                         "team_id": team_id, 
+                                                         "team": team, 
+                                                         "most_recent_game": most_recent_game, 
+                                                         "most_recent_home_team": most_recent_home_team, 
+                                                         "most_recent_away_team": most_recent_away_team, 
+                                                         "most_recent_home_score": most_recent_home_score, 
+                                                         "most_recent_away_score": most_recent_away_score, 
+                                                         "next_fixture": next_fixture, 
+                                                         "next_home_team": next_home_team, 
+                                                         "next_away_team": next_away_team, 
+                                                         "star_players": star_players, 
+                                                         "manager": manager})
 
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int):
@@ -398,7 +449,9 @@ async def get_create_team(request: Request, user_id: int):
     
     public_leagues = get_public_leagues()
     
-    return templates.TemplateResponse("create_team.html", {"request": request, "user_id": user_id, "public_leagues": public_leagues})
+    return templates.TemplateResponse("create_team.html", {"request": request, 
+                                                           "user_id": user_id, 
+                                                           "public_leagues": public_leagues})
 
 @app.post("/create_team/{user_id}")
 async def post_create_team(request: Request, user_id: int):
@@ -421,7 +474,8 @@ async def get_create_new_league(request: Request, user_id: int):
     if user_id != get_current_user(request):
         return RedirectResponse(url="/login", status_code=303)
 
-    return templates.TemplateResponse("create_new_league.html", {"request": request, "user_id": user_id})
+    return templates.TemplateResponse("create_new_league.html", {"request": request, 
+                                                                 "user_id": user_id})
 
 @app.post("/create_new_league/{user_id}")
 async def post_create_new_league(request: Request, user_id: int):
@@ -434,7 +488,8 @@ async def post_create_new_league(request: Request, user_id: int):
     league_year = form.get("league_year")
     is_public = True if form.get("is_public") == "on" else False
     # Create a new league in the database
-    save_new_league(league_name, league_year, is_public, user_id) # will set the league to inactive until the admin activates it.
+    save_new_league(league_name, league_year, is_public, user_id) 
+    # will set the league to inactive until the admin activates it.
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
 
 
@@ -515,10 +570,15 @@ async def get_results(request: Request, team_id: int):
         game_date = game_date.strftime("%Y-%m-%d %H:%M:%S")
         game_date = datetime.datetime.strptime(game_date, "%Y-%m-%d %H:%M:%S")
 
-        game_headers = [game_id, home_team_id, away_team_id, home_team_name, away_team_name, homeScore, awayScore, game_date]
+        game_headers = [game_id, home_team_id, away_team_id, home_team_name, away_team_name,
+                        homeScore, awayScore, game_date]
         list_game_headers.append(game_headers)
 
-    return templates.TemplateResponse("results.html", {"request": request, "results": results, "game_headers": list_game_headers, "team_id": team_id, "team": team})
+    return templates.TemplateResponse("results.html", {"request": request, 
+                                                       "results": results, 
+                                                       "game_headers": list_game_headers, 
+                                                       "team_id": team_id, 
+                                                       "team": team})
 
 @app.get("/draft/{team_id}", response_class=HTMLResponse)
 async def get_draft(request: Request, team_id: int):
@@ -563,7 +623,18 @@ async def get_draft(request: Request, team_id: int):
         picking_team_id = None
         picking_team_name = None
     
-    return templates.TemplateResponse("draft.html", {"request": request, "draft_class": draft_class, "team_id": team_id, "team": team, "league": league, "draft_order": draft_order, "league_year": league_year, "players_drafted": players_drafted, "draft_active": draft_active, "picking_team_id": picking_team_id, "picking_team_name": picking_team_name, "time_on_clock": time_on_clock})
+    return templates.TemplateResponse("draft.html", {"request": request, 
+                                                     "draft_class": draft_class, 
+                                                     "team_id": team_id, 
+                                                     "team": team, 
+                                                     "league": league, 
+                                                     "draft_order": draft_order, 
+                                                     "league_year": league_year, 
+                                                     "players_drafted": players_drafted, 
+                                                     "draft_active": draft_active, 
+                                                     "picking_team_id": picking_team_id, 
+                                                     "picking_team_name": picking_team_name, 
+                                                     "time_on_clock": time_on_clock})
 
 @app.post("/start_draft/{team_id}")
 async def start_draft(request: Request, team_id: int):
@@ -618,7 +689,11 @@ async def load_fixtures(request: Request, team_id: int):
         date = fixture[4]
         fixtureInfo.append([home_team_name[1], away_team_name[1], date])
 
-    return templates.TemplateResponse("fixtures.html", {"request": request, "fixtures": fixtureInfo, "team_id": team_id, "team": team, "league": league})
+    return templates.TemplateResponse("fixtures.html", {"request": request, 
+                                                        "fixtures": fixtureInfo, 
+                                                        "team_id": team_id, 
+                                                        "team": team, 
+                                                        "league": league})
 
 ### ADMIN PAGES ###
 
@@ -632,7 +707,9 @@ async def get_admin(request: Request):
     leagues = get_all_leagues()
     # get all teams from the database
     teams = get_all_teams()
-    return templates.TemplateResponse("admin.html", {"request": request, "leagues": leagues, "teams": teams})
+    return templates.TemplateResponse("admin.html", {"request": request, 
+                                                     "leagues": leagues, 
+                                                     "teams": teams})
 
 # ages a league by by one year and updates their skill accordingly
 # this is one step in the process of initializing a new league season
