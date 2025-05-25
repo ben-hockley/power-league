@@ -317,6 +317,7 @@ async def get_home(request: Request, user_id: int):
     if user_id != get_current_user(request):
         return RedirectResponse(url="/login", status_code=303)
     
+    user = get_user_by_id(user_id)
     teams = get_teams_by_user_id(user_id)
     leagues = []
     for team in teams:
@@ -326,7 +327,7 @@ async def get_home(request: Request, user_id: int):
 
     owned_leagues = get_owned_leagues(user_id)
     
-    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues, "user_id": user_id, "owned_leagues": owned_leagues})
+    return templates.TemplateResponse("home.html", {"request": request, "teams": teams, "leagues": leagues, "user_id": user_id, "owned_leagues": owned_leagues, "user": user})
 
 @app.get("/manage_league/{league_id}", response_class=HTMLResponse)
 async def get_league_management(request: Request, league_id: int):
