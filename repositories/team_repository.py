@@ -201,3 +201,17 @@ def get_teams_by_league_id(league_id: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_manager_id(team_id: int):
+    """
+    Get the manager ID for a specific team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM teams WHERE id = ?", (team_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None

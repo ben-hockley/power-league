@@ -15,6 +15,20 @@ def get_user_by_username(username: str):
     else:
         return None
 
+def get_user_by_id(user_id: int):
+    """
+    Get a user by ID from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row
+    else:
+        return None
+
 def create_user(username: str, password: str, avatar: str):
     """
     Create a new user in the database.

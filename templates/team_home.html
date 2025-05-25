@@ -14,7 +14,18 @@
           Record: {{ team[10] }} - {{ team[11] }}
         </span>
       </h1>
-      <!-- You can add more team info here -->
+      <!-- Add a card for the manager displaying manager name and avatar -->
+      <div class="card shadow mb-4 recent-game-card transition-grow">
+        <div class="card-header bg-info text-white">
+          Manager
+        </div>
+        <div class="card-body d-flex align-items-center">
+          <img src="{{ manager[3] }}" alt="Manager Avatar" class="rounded-circle me-3" style="width:64px;height:64px;">
+          <div>
+            <h5 class="card-title mb-0">{{ manager[1] }}</h5>
+          </div>
+        </div>
+    </div>
     </div>
     <div class="col-md-4">
       {% if most_recent_game %}
