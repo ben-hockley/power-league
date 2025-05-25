@@ -159,9 +159,10 @@ async def create_account(request: Request):
     form = await request.form()
     username = form.get("username")
     password = form.get("password")
+    avatar = form.get("avatarUrl")
 
     # Check if the user already exists
-    create_user(username, password)
+    create_user(username, password, avatar)
     return RedirectResponse(url="/login", status_code=303)
 
 @app.get("/delete_team/{team_id}", response_class=HTMLResponse)

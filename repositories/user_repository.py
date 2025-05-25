@@ -15,7 +15,7 @@ def get_user_by_username(username: str):
     else:
         return None
 
-def create_user(username: str, password: str):
+def create_user(username: str, password: str, avatar: str):
     """
     Create a new user in the database.
     """
@@ -25,7 +25,7 @@ def create_user(username: str, password: str):
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+    cur.execute("INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)", (username, password, avatar))
     conn.commit()
     conn.close()
 

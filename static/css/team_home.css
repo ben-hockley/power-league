@@ -1,0 +1,8 @@
+.recent-game-link { display: block; }
+.transition-grow {
+  transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+}
+.transition-grow:hover {
+  transform: scale(1.04);
+  z-index: 2;
+}

@@ -27,6 +27,100 @@
                     <label for="confirm_password" class="form-label">Confirm Password</label>
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                 </div>
+                <!-- Create Avatar Dropdown Section -->
+                <div class="accordion mb-3">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="avatarHeading">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#avatarCollapse" aria-expanded="true" aria-controls="avatarCollapse">
+                                Customize Manager Avatar
+                            </button>
+                        </h2>
+                        <div id="avatarCollapse" class="accordion-collapse collapse show" aria-labelledby="avatarHeading">
+                            <div class="accordion-body">
+                                <label for="hairType" class="form-label">Hair Type</label>
+                                <select class="form-select mb-3" name="hairType" required>
+                                    <option value="" disabled selected>Select hair type</option>
+                                    <option value="NoHair">Bald</option>
+                                    <option value="ShortHairTheCaesar">Buzz Cut</option>
+                                    <option value="ShortHairTheCaesarSidePart">Buzz Cut Side Part</option>
+                                    <option value="ShortHairDreads01">Spiky</option>
+                                    <option value="ShortHairDreads02">Short Dreads</option>
+                                    <option value="ShortHairShortRound">Short Round</option>
+                                    <option value="LongHairDreads">Dreads</option>
+                                    <option value="ShortHairShortFlat">Short Flat</option>
+                                    <option value="LongHairBun">Bun</option>
+                                    <option value="ShortHairShortWaved">Short Waves</option>
+                                    <option value="ShortHairSides">Bald With Sides</option>
+                                </select>
+                                <label for="facialHairType" class="form-label">Facial Hair Type</label>
+                                <select class="form-select mb-3" name="facialHairType">
+                                    <option value="" disabled selected>Select facial hair type</option>
+                                    <option value="Blank">None</option>
+                                    <option value="BeardLight">Light Beard</option>
+                                    <option value="BeardMedium">Medium Beard</option>
+                                    <option value="BeardMajestic">Large Beard</option>
+                                    <option value="MoustacheFancy">Fancy Moustache</option>
+                                    <option value="MoustacheMagnum">Magnum Moustache</option>
+                                </select>
+                                <label for="eyeType" class="form-label">Eye Type</label>
+                                <select class="form-select mb-3" name="eyeType">
+                                    <option value="" disabled selected>Select eye type</option>
+                                    <option value="Default">Standard</option>
+                                    <option value="Happy">Happy</option>
+                                    <option value="Squint">Squint</option>
+                                    <option value="Wink">Wink</option>
+                                    <option value="Side">Side</option>
+                                </select>
+                                <label for="eyebrowType" class="form-label">Eyebrow Type</label>
+                                <select class="form-select mb-3" name="eyebrowType">
+                                    <option value="" disabled selected>Select eyebrow type</option>
+                                    <option value="Default">Standard</option>
+                                    <option value="DefaultNatural">Natural</option>
+                                    <option value="Angry">Angry</option>
+                                    <option value="AngryNatural">Angry Natural</option>
+                                    <option value="RaisedExcited">Raised Excited</option>
+                                </select>
+                                <label for="mouthType" class="form-label">Mouth Type</label>
+                                <select class="form-select mb-3" name="mouthType">
+                                    <option value="" disabled selected>Select mouth type</option>
+                                    <option value="Smile">Smile</option>
+                                    <option value="Sad">Sad</option>
+                                    <option value="Twinkle">Small Smile</option>
+                                    <option value="Concerned">Concerned</option>
+                                </select>
+                                <label for="skinColor" class="form-label">Skin Tone</label>
+                                <select class="form-select mb-3" name="skinColor">
+                                    <option value="" disabled selected>Select skin tone</option>
+                                    <option value="Pale">White</option>
+                                    <option value="Tanned">Tanned</option>
+                                    <option value="Light">Light</option>
+                                    <option value="Brown">Brown</option>
+                                    <option value="DarkBrown">Dark Brown</option>
+                                    <option value="Black">Black</option>
+                                </select>
+                                <label for="hairColor" class="form-label">Hair Color</label>
+                                <select class="form-select mb-3" name="hairColor">
+                                    <option value="" disabled selected>Select hair color</option>
+                                    <option value="Black">Black</option>
+                                    <option value="Brown">Brown</option>
+                                    <option value="Blonde">Blonde</option>
+                                    <option value="Auburn">Ginger</option>
+                                    <option value="SilverGray">Gray</option>
+                                </select>
+                                <label for="clotheType" class="form-label">Clothing Type</label>
+                                <select class="form-select mb-3" name="clotheType">
+                                    <option value="" disabled selected>Select clothing type</option>
+                                    <option value="CollarSweater">Sweater</option>
+                                    <option value="BlazerShirt">Blazer</option>
+                                    <option value="Hoodie">Hoodie</option>
+                                    <option value="ShirtCrewNeck">T-Shirt</option>
+                                </select>
+                            </div>
+                            <img id="avatarPreview" src='https://avataaars.io/?avatarStyle=Circle&topType=NoHair&accessoriesType=NoneColor=Black&hairColor=Black&facialHairType=Blank&facialHairColor=BrownDark&clotheType=CollarSweater&clotheColor=Black&eyeType=WinkWacky&eyebrowType=RaisedExcited&mouthType=Smile&skinColor=Tanned'/>
+                            <input type="hidden" name="avatarUrl" id="avatarUrl" value="https://avataaars.io/?avatarStyle=Circle&topType=NoHair&accessoriesType=NoneColor=Black&hairColor=Black&facialHairType=Blank&facialHairColor=BrownDark&clotheType=CollarSweater&clotheColor=Black&eyeType=WinkWacky&eyebrowType=RaisedExcited&mouthType=Smile&skinColor=Tanned"/>
+                        </div>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary w-100">Create Account</button>
             </form>
             <div class="mt-3 text-center">
@@ -37,5 +131,53 @@
 </div>
 <!-- Bootstrap JS CDN (optional) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatarPreview = document.getElementById('avatarPreview');
+        const avatarUrlInput = document.getElementById('avatarUrl');
+
+        const hairTypeSelect = document.querySelector('select[name="hairType"]');
+        hairTypeSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const facialHairSelect = document.querySelector('select[name="facialHairType"]');
+        facialHairSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const eyeTypeSelect = document.querySelector('select[name="eyeType"]');
+        eyeTypeSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const eyebrowTypeSelect = document.querySelector('select[name="eyebrowType"]');
+        eyebrowTypeSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const mouthTypeSelect = document.querySelector('select[name="mouthType"]');
+        mouthTypeSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const skinColorSelect = document.querySelector('select[name="skinColor"]');
+        skinColorSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const hairColorSelect = document.querySelector('select[name="hairColor"]');
+        hairColorSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+        const clotheTypeSelect = document.querySelector('select[name="clotheType"]');
+        clotheTypeSelect.addEventListener('change', function() {
+            avatarPreview.src = `https://avataaars.io/?avatarStyle=Circle&topType=${hairTypeSelect.value}&accessoriesType=None&hairColor=${hairColorSelect.value}&facialHairType=${facialHairSelect.value}&facialHairColor=${hairColorSelect.value}&clotheType=${clotheTypeSelect.value}&clotheColor=Black&eyeType=${eyeTypeSelect.value}&eyebrowType=${eyebrowTypeSelect.value}&mouthType=${mouthTypeSelect.value}&skinColor=${skinColorSelect.value}`;
+            avatarUrlInput.value = avatarPreview.src;
+        });
+    });
+
+</script>
 </body>
 </html>
