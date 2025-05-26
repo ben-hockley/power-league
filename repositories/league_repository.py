@@ -416,3 +416,16 @@ def get_user_championships_won(user_id: int):
         total_championships += championships_won
     conn.close()
     return total_championships
+
+def get_last_game_date(leagueId: int):
+    """
+    Get the date of the last game played in a league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT date FROM fixtures WHERE league_id = ? ORDER BY date DESC LIMIT 1", (leagueId,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    return None

@@ -17,12 +17,16 @@
             </div>
         </div>
     </div>
+    {% else %}
+    <div class="alert alert-info text-center mb-4">
+        Draft Date: {{ draft_date }}
+    </div>
     {% endif %}
     <h1 class="text-center mb-4">{{ league[1] }} Draft {{ league_year }} Prospects</h1>
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-secondary">
                     <h2 class="mb-0 text-center">Draft Prospects</h2>
                 </div>
                 <div class="card-body scrollable-table">
@@ -97,8 +101,8 @@
         </div>
         <div class="col-lg-4">
             <div class="card shadow mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0 text-center">Draft Order<br><small class="text-white-50">5 Rounds</small></h4>
+                <div class="card-header bg-secondary text-primary">
+                    <h4 class="mb-0 text-center">Draft Order<br><small class="text-secondary-50">5 Rounds</small></h4>
                 </div>
                 <div class="card-body scrollable-table">
                     {% if draft_order %}
@@ -106,7 +110,7 @@
                             {% for round in range(5) %}
                                 {% for team in draft_order %}
                                     {% set pick_index = round * draft_order|length + loop.index0 %}
-                                    <li class="list-group-item {% if draft_active and players_drafted|length == pick_index %}bg-warning fw-bold text-dark{% endif %}">
+                                    <li class="list-group-item {% if draft_active and players_drafted|length == pick_index %}bg-warning fw-bold text-dark{% else %}bg-primary text-secondary{% endif %}">
                                         Round {{ round+1 }}, Pick {{ loop.index }}: {{ team[1] }}
                                         {% if players_drafted and players_drafted|length > pick_index %}
                                             <strong>

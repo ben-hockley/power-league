@@ -1,3 +1,3 @@
-from repositories.league_repository import get_number_of_championships
+from repositories.league_repository import get_last_game_date
 
-print(get_number_of_championships(29))
+print(get_last_game_date(3))

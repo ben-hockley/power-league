@@ -17,61 +17,61 @@
         <div class="player-card" style="grid-column: 1; grid-row: 4;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DL1</div>
-          <div class="player-rating">95</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 2; grid-row: 4;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DL2</div>
-          <div class="player-rating">93</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 4; grid-row: 4;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DL3</div>
-          <div class="player-rating">91</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 5; grid-row: 4;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DL4</div>
-          <div class="player-rating">89</div>
+          <div class="player-rating"></div>
         </div>
 
         <!-- LBs -->
         <div class="player-card" style="grid-column: 2; grid-row: 3;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">LB1</div>
-          <div class="player-rating">90</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 3; grid-row: 3;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">LB2</div>
-          <div class="player-rating">88</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 4; grid-row: 3;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">LB3</div>
-          <div class="player-rating">86</div>
+          <div class="player-rating"></div>
         </div>
 
         <!-- DBs -->
         <div class="player-card" style="grid-column: 1; grid-row: 2;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DB1</div>
-          <div class="player-rating">92</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 2; grid-row: 1;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DB2</div>
-          <div class="player-rating">89</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 4; grid-row: 1;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DB3</div>
-          <div class="player-rating">87</div>
+          <div class="player-rating"></div>
         </div>
         <div class="player-card" style="grid-column: 5; grid-row: 2;">
           <img class="player-avatar" src="/static/avatars/default.svg" alt="Player Avatar" width="48" height="48">
           <div class="player-name">DB4</div>
-          <div class="player-rating">85</div>
+          <div class="player-rating"></div>
         </div>
       </div>
     </div>
@@ -86,7 +86,9 @@
           <div id="dlHeader" class="dropdown-header">Select Item</div>
           <ul id="dlList" class="dropdown-list">
             {% for dl in depth_dl %}
-              <li draggable="true" data-id="{{ dl[0] }}" skill="{{ dl[6] }}">{{ dl[1] + " " + dl[2] }} : {{ dl[6] }}</li>
+              <li draggable="true" data-id="{{ dl[0] }}" skill="{{ dl[6] }}">
+                {{ dl[1] + " " + dl[2] }} : {{ dl[6] }}{% if dl[3] == 21 %} (R){% endif %}
+              </li>
             {% endfor %}
           </ul>
           <input type="hidden" name="dl_order" id="dl_order">
@@ -98,7 +100,9 @@
           <div id="lbHeader" class="dropdown-header">Select Item</div>
           <ul id="lbList" class="dropdown-list">
             {% for lb in depth_lb %}
-              <li draggable="true" data-id="{{ lb[0] }}" skill="{{ lb[6] }}">{{ lb[1] + " " + lb[2] }} : {{ lb[6] }}</li>
+              <li draggable="true" data-id="{{ lb[0] }}" skill="{{ lb[6] }}">
+                {{ lb[1] + " " + lb[2] }} : {{ lb[6] }}{% if lb[3] == 21 %} (R){% endif %}
+              </li>
             {% endfor %}
           </ul>
           <input type="hidden" name="lb_order" id="lb_order">
@@ -110,7 +114,9 @@
           <div id="dbHeader" class="dropdown-header">Select Item</div>
           <ul id="dbList" class="dropdown-list">
             {% for db in depth_db %}
-              <li draggable="true" data-id="{{ db[0] }}" skill="{{ db[6] }}">{{ db[1] + " " + db[2] }}: {{ db[6] }}</li>
+              <li draggable="true" data-id="{{ db[0] }}" skill="{{ db[6] }}">
+                {{ db[1] + " " + db[2] }}: {{ db[6] }}{% if db[3] == 21 %} (R){% endif %}
+              </li>
             {% endfor %}
           </ul>
           <input type="hidden" name="db_order" id="db_order">

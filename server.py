@@ -25,7 +25,7 @@ create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_lea
 delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id, get_next_fixture
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick,\
-check_draft_active, get_picking_team_id, get_time_on_clock
+check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date
 
 from starlette.middleware.sessions import SessionMiddleware
 from config import SECRET_KEY
@@ -66,11 +66,16 @@ def simulate_todays_fixtures(today: datetime.date = None):
 
     # Simulate each fixture
     for fixture in fixtures:
-        home_team_id = int(fixture[2])
-        print(home_team_id)
-        away_team_id = int(fixture[3])
-        print(away_team_id)
-        match_report_no_link(home_team_id, away_team_id)
+        # if the fixture is a draft (home and away team are 0), start the draft
+        if fixture[2] == 0 and fixture[3] == 0:
+            league_id = fixture[1]
+            start_draft_no_link(league_id)
+        else:
+            home_team_id = int(fixture[2])
+            print(home_team_id)
+            away_team_id = int(fixture[3])
+            print(away_team_id)
+            match_report_no_link(home_team_id, away_team_id)
         # Delete the fixture from the database
         delete_fixture(fixture[0])
 
@@ -88,7 +93,9 @@ def start_new_season_no_link(league_id: int):
     wipe_league_records(league_id)
     # 5. generate a new schedule
     generate_schedule(league_id)
-    # 6. order the depth charts in order of skill
+    # 6. schedule the draft by saving it as a fixture where home and away team ids are 0.
+    schedule_draft(league_id)
+    # 7. order the depth charts in order of skill
     order_depth_charts(league_id)
 
 
@@ -380,11 +387,14 @@ async def get_league_management(request: Request, league_id: int):
     teams = get_teams_by_league_id(league_id)
 
     user_id = get_league_owner_id(league_id)
+
+    draft_date = get_draft_date(league_id)
     return templates.TemplateResponse("manage_league.html", {"request": request, 
                                                              "league": league, 
                                                              "league_id": league_id, 
                                                              "user_id": user_id, 
-                                                             "teams": teams})
+                                                             "teams": teams,
+                                                             "draft_date": draft_date})
 
 @app.post("/activate_league/{league_id}")
 async def activate_league(request: Request, league_id: int):
@@ -397,6 +407,7 @@ async def activate_league(request: Request, league_id: int):
 
     # Activate the league
     generate_schedule(league_id)
+    schedule_draft(league_id)
     create_draft_class(league_id)
     order_depth_charts(league_id)
     make_league_active(league_id)
@@ -452,6 +463,7 @@ async def get_team(request: Request, team_id: int):
 
     number_of_championships = get_number_of_championships(team_id)
     user_championships = get_user_championships_won(team_id)
+    draft_date = get_draft_date(get_team_league_id(team_id))
     return templates.TemplateResponse("team_home.html", {"request": request, 
                                                          "team_id": team_id, 
                                                          "team": team, 
@@ -469,7 +481,8 @@ async def get_team(request: Request, team_id: int):
                                                          "reigning_champion": reigning_champion,
                                                          "number_of_championships": number_of_championships,
                                                          "user_championships": user_championships,
-                                                         "svg_content": svg_content})
+                                                         "svg_content": svg_content,
+                                                         "draft_date": draft_date})
 
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int):
@@ -670,6 +683,7 @@ async def get_draft(request: Request, team_id: int):
         picking_team_id = None
         picking_team_name = None
     
+    draft_date = get_draft_date(league_id)
     return templates.TemplateResponse("draft.html", {"request": request, 
                                                      "draft_class": draft_class, 
                                                      "team_id": team_id, 
@@ -681,7 +695,8 @@ async def get_draft(request: Request, team_id: int):
                                                      "draft_active": draft_active, 
                                                      "picking_team_id": picking_team_id, 
                                                      "picking_team_name": picking_team_name, 
-                                                     "time_on_clock": time_on_clock})
+                                                     "time_on_clock": time_on_clock,
+                                                     "draft_date": draft_date})
 
 @app.post("/start_draft/{team_id}")
 async def start_draft(request: Request, team_id: int):
@@ -698,6 +713,13 @@ async def start_draft(request: Request, team_id: int):
     await manager.broadcast("reload")
 
     return RedirectResponse(url=f"/draft/{team_id}", status_code=303)
+
+def start_draft_no_link(league_id: int):
+    draft_year = get_league_year(league_id)
+    # start the draft
+    add_draft(league_id, draft_year)
+    # Notify all clients to reload
+    manager.broadcast("reload")
 
 @app.post("/make_draft_pick/{team_id}/{player_id}")
 async def draft_player(request: Request, team_id: int, player_id: int):
@@ -735,12 +757,15 @@ async def load_fixtures(request: Request, team_id: int):
         away_team_name = get_team_by_id(fixture[3])
         date = fixture[4]
         fixtureInfo.append([home_team_name[1], away_team_name[1], date])
+    
+    draft_date = get_draft_date(league_id)
 
     return templates.TemplateResponse("fixtures.html", {"request": request, 
                                                         "fixtures": fixtureInfo, 
                                                         "team_id": team_id, 
                                                         "team": team, 
-                                                        "league": league})
+                                                        "league": league,
+                                                        "draft_date": draft_date})
 
 ### ADMIN PAGES ###
 

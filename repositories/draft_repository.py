@@ -224,3 +224,44 @@ def get_time_on_clock(league_id: int, draft_year: int):
     time_left = pick_deadline - datetime.now()
     conn.close()
     return time_left
+
+def schedule_draft(league_id: int):
+    """
+    Save the draft as a fixture in the fixtures table, with home_team_id and away_team_id set to 0.
+    The date should be in the format 'YYYY-MM-DD'. 
+    Execute this after generating the schedule for the league, set the draft date to the day after
+    the last game of the season.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # get the last game date for the league
+    cur.execute("SELECT date FROM fixtures WHERE league_id = ? ORDER BY date DESC LIMIT 1", (league_id,))
+    date = cur.fetchone()[0]
+
+    # add one day to the date (schedule the draft for the day after the last game)
+    date = datetime.strptime(str(date), '%Y-%m-%d') + timedelta(days=1)
+    date = date.strftime('%Y-%m-%d')
+
+    cur.execute(
+        "INSERT INTO fixtures (league_id, date, home_team_id, away_team_id) VALUES (?, ?, ?, ?)",
+        (league_id, date, 0, 0)
+    )
+    conn.commit()
+    conn.close()
+
+def get_draft_date(league_id: int):
+    """
+    Get the draft date for a given league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT date FROM fixtures WHERE league_id = ? AND home_team_id = 0 AND away_team_id = 0",
+        (league_id,)
+    )
+    date = cur.fetchone()
+    conn.close()
+    if date:
+        return date[0]
+    return None

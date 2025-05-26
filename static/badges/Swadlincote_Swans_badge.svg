@@ -1,0 +1,5 @@
+<svg width="220" height="220" viewBox="0 0 220 220">
+          <polygon points="110,20 200,60 200,160 110,200 20,160 20,60" fill="#eafb06" stroke="#1100ff" stroke-width="8"/>
+          <text x="110" y="110" text-anchor="middle" font-size="48" fill="#1100ff" dominant-baseline="middle">⭐</text>
+          <text x="110" y="185" text-anchor="middle" font-size="22" fill="#1100ff" font-weight="bold" dominant-baseline="middle">Swadlincote Swan</text>
+        </svg>

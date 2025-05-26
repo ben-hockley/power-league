@@ -118,7 +118,7 @@ function updateLineup() {
         const playerCard = playerCards[i];
         const player = playerPositions[i];
         playerCard.querySelector('.player-name').textContent = player.textContent;
-        playerCard.querySelector('.player-rating').textContent = player.getAttribute('skill');
+        //playerCard.querySelector('.player-rating').textContent = player.getAttribute('skill');
         // Display SVG avatar
         playerCard.querySelector('.player-avatar').setAttribute('src', '/static/avatars/' + player.getAttribute('data-id') + '.svg');
         playerCard.querySelector('.player-avatar').setAttribute('alt', player.textContent);
