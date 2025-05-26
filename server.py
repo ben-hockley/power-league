@@ -106,8 +106,9 @@ app = FastAPI()
 app.add_middleware(SessionMiddleware,
                    secret_key=SECRET_KEY,
                    session_cookie="session_id",
-                   #https_only=True,
-                   #same_site="lax",
+                   https_only=True,
+                   same_site="lax",
+                   #secure=True, # requires HTTPS, should be used in production.
                    )
 
 # Setup exception handling
