@@ -28,6 +28,7 @@ from repositories.draft_repository import get_players_drafted, add_draft, make_d
 check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date
 
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from config import SECRET_KEY
 from config import SERVER_HOST
 
@@ -102,6 +103,17 @@ def start_new_season_no_link(league_id: int):
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
+# Setup exception handling
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return templates.TemplateResponse("error/404.html", {"request": request}, status_code=exc.status_code)
+    elif exc.status_code == 500:
+        return templates.TemplateResponse("error/500.html", {"request": request}, status_code=exc.status_code)
+    else:
+        return templates.TemplateResponse("error/generic_error.html", {"request": request}, status_code=exc.status_code)
+
+# Initialize the background scheduler
 @app.websocket("/ws/draft")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -300,7 +312,6 @@ async def roster_cut_player(request: Request, team_id: int):
     cut_player(player_id)
 
     return RedirectResponse(url=f"/roster/{team_id}", status_code=303)
-
 
 @app.get("/standings/{team_id}", response_class=HTMLResponse)
 async def get_league_table(request: Request, team_id: int):
@@ -551,7 +562,6 @@ async def post_create_new_league(request: Request, user_id: int):
     save_new_league(league_name, league_year, is_public, user_id) 
     # will set the league to inactive until the admin activates it.
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
-
 
 @app.get("/logout")
 async def logout(request: Request):
@@ -820,8 +830,6 @@ async def start_new_season(request: Request, league_id: int):
     order_depth_charts(league_id)
 
     return RedirectResponse(url="/admin", status_code=303)
-
-
 
 # this is also one step in the process of initializing a new league season
 @app.get("/wipe_league_records/{league_id}")
