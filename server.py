@@ -5,6 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
+#from pydantic import BaseModel, constr
+
 import datetime
 import string
 
@@ -220,8 +222,8 @@ async def delete_user_team(
     request: Request,
     team_id: int,
     auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     # delete the team from the database
     delete_team(team_id)
@@ -233,8 +235,8 @@ async def delete_user_team(
 @app.get("/depth_chart_offense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # # if not check_user_ownership(request, team_id):
+    #     return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 
@@ -255,8 +257,8 @@ async def get_depth_chart(request: Request, team_id: int, auth: bool = Depends(r
 @app.post("/depth_chart_offense/{team_id}")
 async def save_depth_chart_offense_changes(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    ## if not check_user_ownership(request, team_id):
+    #     return RedirectResponse(url="/login", status_code=303)
     
     form = await request.form()
     depth_qb = form.get("qb_order")
@@ -275,8 +277,8 @@ async def save_depth_chart_offense_changes(request: Request, team_id: int, auth:
 @app.get("/depth_chart_defense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart_defense(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    ## if not check_user_ownership(request, team_id):
+    #    return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 
@@ -295,8 +297,8 @@ async def get_depth_chart_defense(request: Request, team_id: int, auth: bool = D
 @app.post("/depth_chart_defense/{team_id}")
 async def save_depth_chart_defense_changes(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     form = await request.form()
     depth_dl = form.get("dl_order")
@@ -311,8 +313,8 @@ async def save_depth_chart_defense_changes(request: Request, team_id: int, auth:
 
 @app.get("/roster/{team_id}", response_class=HTMLResponse)
 async def get_roster(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 
@@ -338,8 +340,8 @@ async def roster_cut_player(request: Request, team_id: int, auth: bool = Depends
 @app.get("/standings/{team_id}", response_class=HTMLResponse)
 async def get_league_table(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 
@@ -356,8 +358,8 @@ async def get_league_table(request: Request, team_id: int, auth: bool = Depends(
 
 @app.get("/freeagents/{team_id}", response_class=HTMLResponse)
 async def get_league_free_agents(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 
@@ -372,8 +374,8 @@ async def get_league_free_agents(request: Request, team_id: int, auth: bool = De
 @app.post("/sign_player/{team_id}")
 async def sign_player_to_team(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
     
     form = await request.form()
     player_id = form.get("player_id")
@@ -387,8 +389,8 @@ async def sign_player_to_team(request: Request, team_id: int, auth: bool = Depen
 async def get_home(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
 
     # Check if the user is logged in
-    if user_id != get_current_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_current_user(request):
+     #   return RedirectResponse(url="/login", status_code=303)
     
     user = get_user_by_id(user_id)
     teams = get_teams_by_user_id(user_id)
@@ -413,8 +415,8 @@ async def get_league_management(request: Request, league_id: int, auth: bool = D
     user_id = get_current_user(request)
     
     # Check if the user owns the league
-    if user_id != get_league_owner_id(league_id):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_league_owner_id(league_id):
+     #   return RedirectResponse(url="/login", status_code=303)
 
     league = get_league(league_id)
     teams = get_teams_by_league_id(league_id)
@@ -435,8 +437,8 @@ async def activate_league(request: Request, league_id: int, auth: bool = Depends
     user_id = get_current_user(request)
     
     # Check if the user owns the league
-    if user_id != get_league_owner_id(league_id):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_league_owner_id(league_id):
+     #   return RedirectResponse(url="/login", status_code=303)
 
     # Activate the league
     generate_schedule(league_id)
@@ -457,8 +459,8 @@ def get_svg_content(svg_path):
 @app.get("/team/{team_id}", response_class=HTMLResponse)
 async def get_team(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
     
     team = get_team_by_id(team_id)
 
@@ -520,8 +522,8 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
     # Check if the user is logged in
-    if user_id != get_current_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_current_user(request):
+     #   return RedirectResponse(url="/login", status_code=303)
     
     public_leagues = get_public_leagues()
     
@@ -532,8 +534,8 @@ async def get_create_team(request: Request, user_id: int, auth: bool = Depends(g
 @app.post("/create_team/{user_id}")
 async def post_create_team(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
     # Check if the user is logged in
-    if user_id != get_current_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_current_user(request):
+     #   return RedirectResponse(url="/login", status_code=303)
 
     form = await request.form()
     team_name = form.get("team_name")
@@ -564,8 +566,8 @@ async def post_create_team(request: Request, user_id: int, auth: bool = Depends(
 @app.get("/create_new_league/{user_id}", response_class=HTMLResponse)
 async def get_create_new_league(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
     # Check if the user is logged in
-    if user_id != get_current_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_current_user(request):
+     #   return RedirectResponse(url="/login", status_code=303)
 
     return templates.TemplateResponse("create_new_league.html", {"request": request, 
                                                                  "user_id": user_id})
@@ -573,8 +575,8 @@ async def get_create_new_league(request: Request, user_id: int, auth: bool = Dep
 @app.post("/create_new_league/{user_id}")
 async def post_create_new_league(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
     # Check if the user is logged in
-    if user_id != get_current_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+    #if user_id != get_current_user(request):
+     #   return RedirectResponse(url="/login", status_code=303)
 
     form = await request.form()
     league_name = form.get("league_name")
@@ -633,8 +635,8 @@ async def game_details(request: Request, game_id: int):
 
 @app.get("/results/{team_id}", response_class=HTMLResponse)
 async def get_results(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
     
     team = get_team_by_id(team_id)
 
@@ -674,8 +676,8 @@ async def get_results(request: Request, team_id: int, auth: bool = Depends(requi
 
 @app.get("/draft/{team_id}", response_class=HTMLResponse)
 async def get_draft(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 
@@ -733,8 +735,8 @@ async def get_draft(request: Request, team_id: int, auth: bool = Depends(require
 # this is an endpoint purely for development purposes, it will be removed from the final version
 @app.post("/start_draft/{team_id}")
 async def start_draft(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     league_id = get_league_id(team_id)
     draft_year = get_league_year(league_id)
@@ -756,8 +758,8 @@ def start_draft_no_link(league_id: int):
 
 @app.post("/make_draft_pick/{team_id}/{player_id}")
 async def draft_player(request: Request, team_id: int, player_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     league_id = get_league_id(team_id)
     draft_year = get_league_year(league_id)
@@ -775,8 +777,8 @@ async def draft_player(request: Request, team_id: int, player_id: int, auth: boo
 
 @app.get("/fixtures/{team_id}", response_class=HTMLResponse)
 async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
-    if not check_user_ownership(request, team_id):
-        return RedirectResponse(url="/login", status_code=303)
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
 
     team = get_team_by_id(team_id)
 

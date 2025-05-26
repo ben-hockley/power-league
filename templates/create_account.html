@@ -17,11 +17,15 @@
             <form method="post" action="/create_account">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                    <!-- Usernames must be between 5 and 20 characters long -->
+                    <input type="text" class="form-control" id="username" name="username" minlength="5" maxlength="20" required autofocus>
+                    <div class="form-text">Username must be 5-20 characters long.</div>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <!-- Passwords must be between 8 and 20 characters long, and contain atleast 1 lowercase letter, 1 uppercase letter and 1 symbol-->
+                    <input type="password" class="form-control" id="password" name="password" minlength="8" maxlength="20" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,20}$" required>
+                    <div class="form-text">Password must be 8-20 characters long, and contain at least 1 lowercase letter, 1 uppercase letter, and 1 symbol.</div>
                 </div>
                 <div class="mb-3">
                     <label for="confirm_password" class="form-label">Confirm Password</label>
