@@ -403,6 +403,13 @@ async def activate_league(request: Request, league_id: int):
 
     return RedirectResponse(url=f"/manage_league/{league_id}", status_code=303)
 
+def get_svg_content(svg_path):
+    # Make sure svg_path is a safe path and exists
+    if svg_path and svg_path.endswith('.svg') and os.path.exists(svg_path):
+        with open(svg_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return None
+
 @app.get("/team/{team_id}", response_class=HTMLResponse)
 async def get_team(request: Request, team_id: int):
 
@@ -439,6 +446,10 @@ async def get_team(request: Request, team_id: int):
     else:
         reigning_champion = reigning_champion
 
+    svg_content = None
+    if team[17] and team[17].endswith('.svg'):
+        svg_content = get_svg_content(team[17])
+
     number_of_championships = get_number_of_championships(team_id)
     user_championships = get_user_championships_won(team_id)
     return templates.TemplateResponse("team_home.html", {"request": request, 
@@ -457,7 +468,8 @@ async def get_team(request: Request, team_id: int):
                                                          "league": league,
                                                          "reigning_champion": reigning_champion,
                                                          "number_of_championships": number_of_championships,
-                                                         "user_championships": user_championships})
+                                                         "user_championships": user_championships,
+                                                         "svg_content": svg_content})
 
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int):
@@ -480,10 +492,27 @@ async def post_create_team(request: Request, user_id: int):
     form = await request.form()
     team_name = form.get("team_name")
     league_id = form.get("league_id")
+    primary_color = form.get("team_primary_color")
+    secondary_color = form.get("team_secondary_color")
+    badge_option: str = form.get("badge_option")
+    badge_upload = form.get("team_logo")
+    badge_generated = form.get("badge_svg_data")
 
+    print(f"Badge option: {badge_option}")
+
+    if badge_option == "url" and badge_upload :
+        badge_path = badge_upload
+    elif badge_option == "default" and badge_generated:
+        # save svg to a file
+        svg_filename = f"static/badges/{team_name.replace(' ', '_')}_badge.svg"
+        with open(svg_filename, "w", encoding="utf-8") as svg_file:
+            svg_file.write(badge_generated)
+        badge_path = svg_filename
+    else:
+        badge_path = "static/badges/default_badge.svg"  # Default badge if none is provided
     # Create a new team in the database
-    create_new_team(user_id, team_name, league_id)
-    
+    team_id = create_new_team(user_id, team_name, league_id, primary_color, secondary_color, badge_path)
+    # Redirect to the home page
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
 
 @app.get("/create_new_league/{user_id}", response_class=HTMLResponse)

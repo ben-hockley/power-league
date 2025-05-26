@@ -55,17 +55,19 @@ def get_team_owner_id(team_id: int):
     else:
         return None
     
-def create_new_team(user_id: int, team_name: str, league_id: int):
+def create_new_team(user_id: int, team_name: str, league_id: int,
+                    primary_color: str, secondary_color: str, badge_path: str):
     """
     Create a new team in the database.
     """
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO teams (user_id, team_name, league_id, wins, losses, points_for, points_against) VALUES (?, ?, ?, ?, ?, ?, ?)", (user_id, team_name, league_id, 0, 0, 0, 0))
+    cur.execute("INSERT INTO teams (user_id, team_name, league_id, wins, losses, points_for, points_against, primary_color, secondary_color, badge_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (user_id, team_name, league_id, 0, 0, 0, 0, primary_color, secondary_color, badge_path))
     conn.commit()
     team_id = cur.lastrowid
     conn.close()
     fill_new_team(team_id)
+    return team_id
 
 def get_team_league_id(team_id: int):
     """

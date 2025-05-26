@@ -2,38 +2,64 @@
 
 {% block head %}
   <title>Home</title>
+  <style>
+    {% if team[15] %}
+    .bg-primary {
+      background-color: {{ team[15] }} !important;
+    }
+    {% endif %}
+    {% if team[16] %}
+    .text-secondary {
+      color: {{ team[16] }} !important;
+    }
+    {% endif %}
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
   <div class="row">
     <div class="col-md-8">
-      <h1>
+      <h1 class="d-flex align-items-center">
+        {% if svg_content %}
+          <span class="me-3" style="height:56px;width:auto;display:inline-block;vertical-align:middle;">
+            {{ svg_content | safe }}
+          </span>
+        {% elif team[17] %}
+          <img src="{{ team[17] }}" alt="Team Badge" class="me-3" style="height:56px;width:auto;">
+        {% endif %}
         {{ team[1] }}
-        <span class="badge bg-secondary ms-2 fs-5 align-middle">
-          Record: {{ team[10] }} - {{ team[11] }}
+        <span class="badge bg-primary text-secondary ms-2 fs-5 align-middle">
+            Record: {{ team[10] }} - {{ team[11] }}
         </span>
       </h1>
-      <!-- Manager card -->
-      <a href="/home/{{ team[14] }}" class="text-decoration-none recent-game-link">
-      <div class="card shadow mb-4 recent-game-card transition-grow">
-        <div class="card-header bg-info text-white">
-          Manager
+      <div class="row">
+        <div class="col-md-6">
+          <!-- You can place other content here if needed -->
         </div>
-        <div class="card-body d-flex align-items-center">
-          <img src="{{ manager[3] }}" alt="Manager Avatar" class="rounded-circle me-3" style="width:64px;height:64px;">
-          <div>
-            <h5 class="card-title mb-0">{{ manager[1] }}</h5>
-            <p class="card-text mb-1">
-              <strong>Championships Won:</strong> {{ user_championships }}
-          </div>
+        <div class="col-md-6">
+          <!-- Manager card moved to right half and width halved -->
+          <a href="/home/{{ team[14] }}" class="text-decoration-none recent-game-link">
+            <div class="card shadow mb-4 recent-game-card transition-grow">
+              <div class="card-header bg-primary text-secondary">
+                Manager
+              </div>
+              <div class="card-body d-flex align-items-center">
+                <img src="{{ manager[3] }}" alt="Manager Avatar" class="rounded-circle me-3" style="width:64px;height:64px;">
+                <div>
+                  <h5 class="card-title mb-0">{{ manager[1] }}</h5>
+                  <p class="card-text mb-1">
+                    <strong>Championships Won:</strong> {{ user_championships }}
+                </div>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
-      </a>
       <!-- League and Season box -->
       <a href="/standings/{{ team_id }}" class="text-decoration-none recent-game-link">
       <div class="card shadow mb-4 recent-game-card transition-grow">
-        <div class="card-header bg-secondary text-white">
+        <div class="card-header bg-primary text-secondary">
           League
         </div>
         <div class="card-body">
@@ -60,7 +86,7 @@
       {% if most_recent_game %}
       <a href="/results/{{ most_recent_game[0] }}" class="text-decoration-none recent-game-link">
         <div class="card shadow mb-4 recent-game-card transition-grow">
-          <div class="card-header bg-primary text-white">
+          <div class="card-header bg-primary text-secondary">
             Most Recent Game
           </div>
           <div class="card-body">
@@ -83,7 +109,7 @@
       {% if next_fixture %}
       <a href="/fixtures/{{ team_id }}" class="text-decoration-none recent-game-link">
         <div class="card shadow mb-4 next-match-card transition-grow">
-          <div class="card-header bg-success text-white">
+          <div class="card-header bg-primary text-secondary">
             Next Match
           </div>
           <div class="card-body">
@@ -101,7 +127,7 @@
       {% if star_players %}
       <a href="/roster/{{ team_id }}" class="text-decoration-none recent-game-link">
         <div class="card shadow mb-4 star-players-card transition-grow">
-          <div class="card-header bg-warning text-dark">
+          <div class="card-header bg-primary text-secondary">
             Roster
           </div>
           <div class="card-body">
