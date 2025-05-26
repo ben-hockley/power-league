@@ -8,6 +8,35 @@
   {% block head %}
   <title>Power League</title>
   {% endblock %}
+  <style>
+    {% if team[15] %}
+    .bg-primary {
+      background-color: {{ team[15] }} !important;
+    }
+    .text-primary {
+      color: {{ team[15] }} !important;
+    }
+    .btn-primary {
+      background-color: {{ team[15] }} !important;
+      border-color: {{ team[15] }} !important;
+      color: {{ team[16] }} !important;
+    }
+    {% endif %}
+    {% if team[17] %}
+    {% endif %}
+    {% if team[16] %}
+    .btn-secondary {
+      background-color: {{ team[16] }} !important;
+      color: {{ team[15] }} !important;
+    }
+    .bg-secondary {
+      background-color: {{ team[16] }} !important;
+    }
+    .text-secondary {
+      color: {{ team[16] }} !important;
+    }
+    {% endif %}
+  </style>
 </head>
 <body>
 
