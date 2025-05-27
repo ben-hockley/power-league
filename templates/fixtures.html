@@ -16,7 +16,7 @@
             <tbody>
                 {% for fixture in fixtures %}
                 <tr>
-                    <td>{{ fixture[2] }}</td>
+                    <td>{{ fixture[2] }} @ 12:00PM GMT</td>
                     <td>{{ fixture[0] }}</td>
                     <td>{{ fixture[1] }}</td>
                 </tr>
@@ -28,7 +28,7 @@
         <div class="alert alert-info text-center">No upcoming fixtures.</div>
     {% endif %}
     <div class="text-center mt-4">
-        <p>Draft Date : {{ draft_date }}</p>
+        <p>Draft Date : {{ draft_date }} @ 12:00 PM GMT</p>
     </div>
 </div>
 {% endblock %}
