@@ -1,5 +1,6 @@
 from repositories.database import get_db_connection
 from repositories.player_repository import fill_new_team
+import os
 
 def get_teams_by_user_id(user_id: int):
     """
@@ -142,15 +143,33 @@ def delete_team(team_id: int):
     """
     Delete a team from the database.
     """
+    team_name = get_team_name(team_id)
+    team_name = team_name.replace(" ", "_")  # Normalize the team name for file paths
     conn = get_db_connection()
     cur = conn.cursor()
     # Delete the team from the teams table
     cur.execute("DELETE FROM teams WHERE id = ?", (team_id,))
     conn.commit()
+    # Delete all the player avatars associated with the team
+    cur.execute("SELECT id FROM players WHERE team_id = ?", (team_id,))
+    player_ids = cur.fetchall()
+    for player_id in player_ids:
+        player_id = player_id[0]
+        avatar_path = f"static/avatars/{player_id}.png"
+        if os.path.exists(avatar_path):
+            os.remove(avatar_path)
     # Delete all the team's players from the players table
     cur.execute("DELETE FROM players WHERE team_id = ?", (team_id,))
     conn.commit()
+    cur.execute("DELETE FROM fixtures WHERE home_team_id = ? OR away_team_id = ?", (team_id, team_id))
+    conn.commit()
+    cur.execute("DELETE FROM trades WHERE proposing_team_id = ? OR receiving_team_id = ?", (team_id, team_id))
+    conn.commit()
     conn.close()
+    # Delete the teams badge if it exists
+    badge_path = f"static/badges/{team_name}_badge.svg"
+    if os.path.exists(badge_path):
+        os.remove(badge_path)
 
 def get_standings(league_id: int):
     """
