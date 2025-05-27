@@ -307,3 +307,16 @@ def auto_draft_pick():
         for draft in expired_picks:
             draft_best_available_player(draft[1], draft[2])  # draft[1] is league_id, draft[2] is draft_year
     #print(f"Auto drafter ran successfully at {now}.")
+
+def delete_draft(league_id: int, draft_year: int):
+    """
+    Delete a draft from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM drafts WHERE league_id = ? AND year = ?",
+        (league_id, draft_year)
+    )
+    conn.commit()
+    conn.close()

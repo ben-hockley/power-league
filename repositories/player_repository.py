@@ -657,3 +657,15 @@ def get_star_players(team_id: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_all_players_by_league(league_id: int):
+    """
+    Get all players in a league.
+    """
+    league_year = get_league_year(league_id)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM players WHERE league_id = ? AND draft_year != ?", (league_id, league_year))
+    rows = cur.fetchall()
+    conn.close()
+    return rows

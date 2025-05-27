@@ -153,6 +153,135 @@
       {% endif %}
     </div>
   </div>
+  <!-- Trades Section -->
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-secondary">
+          Trades Proposed
+        </div>
+        <div class="card-body">
+          {% if trades_proposed and trades_proposed|length > 0 %}
+            <ul class="list-group">
+              {% for trade in trades_proposed %}
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="fw-bold mb-1">To <span class="text-primary">{{ trade['receiving_team_name'] }}</span></div>
+                      <div class="small text-muted mb-1">Players Offered:</div>
+                      {% if trade['players_offered'] and trade['players_offered']|length > 0 %}
+                        <ul class="list-unstyled mb-0">
+                          {% for player in trade['players_offered'] %}
+                            <li>
+                              <span class="fw-bold">{{ player[1] }} {{ player[2] }}</span>
+                              <span class="text-muted">({{ player[7] }}, Age: {{ player[3] }}, Skill: {{ player[6] }})</span>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <span class="text-muted">None</span>
+                      {% endif %}
+                    </div>
+                    <div class="col-6 border-start">
+                      <div class="small text-muted mb-1">Players Requested:</div>
+                      {% if trade['players_requested'] and trade['players_requested']|length > 0 %}
+                        <ul class="list-unstyled mb-0">
+                          {% for player in trade['players_requested'] %}
+                            <li>
+                              <span class="fw-bold">{{ player[1] }} {{ player[2] }}</span>
+                              <span class="text-muted">({{ player[7] }}, Age: {{ player[3] }}, Skill: {{ player[6] }})</span>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <span class="text-muted">None</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <!-- Delete Trade Button -->
+                  <form method="POST" action="/delete_trade/{{ team_id }}" class="mt-2 text-end" style="display:inline;">
+                    <input type="hidden" name="trade_id" value="{{ trade['id'] }}">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this trade request?');">
+                      Delete Trade
+                    </button>
+                  </form>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted">No trades proposed.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-secondary">
+          Trades Received
+        </div>
+        <div class="card-body">
+          {% if trades_received and trades_received|length > 0 %}
+            <ul class="list-group">
+              {% for trade in trades_received %}
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="fw-bold mb-1">From <span class="text-primary">{{ trade['proposing_team_name'] }}</span></div>
+                      <div class="small text-muted mb-1">Players Offered:</div>
+                      {% if trade['players_offered'] and trade['players_offered']|length > 0 %}
+                        <ul class="list-unstyled mb-0">
+                          {% for player in trade['players_offered'] %}
+                            <li>
+                              <span class="fw-bold">{{ player[1] }} {{ player[2] }}</span>
+                              <span class="text-muted">({{ player[7] }}, Age: {{ player[3] }}, Skill: {{ player[6] }})</span>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <span class="text-muted">None</span>
+                      {% endif %}
+                    </div>
+                    <div class="col-6 border-start">
+                      <div class="small text-muted mb-1">Players Requested:</div>
+                      {% if trade['players_requested'] and trade['players_requested']|length > 0 %}
+                        <ul class="list-unstyled mb-0">
+                          {% for player in trade['players_requested'] %}
+                            <li>
+                              <span class="fw-bold">{{ player[1] }} {{ player[2] }}</span>
+                              <span class="text-muted">({{ player[7] }}, Age: {{ player[3] }}, Skill: {{ player[6] }})</span>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <span class="text-muted">None</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <!-- Accept and Reject Trade Buttons -->
+                  <div class="mt-2 text-end">
+                    <form method="POST" action="/make_trade/{{ team_id }}" style="display:inline;">
+                      <input type="hidden" name="trade_id" value="{{ trade['id'] }}">
+                      <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to accept this trade?');">
+                        Accept
+                      </button>
+                    </form>
+                    <form method="POST" action="/delete_trade/{{ team_id }}" style="display:inline;">
+                      <input type="hidden" name="trade_id" value="{{ trade['id'] }}">
+                      <button type="submit" class="btn btn-sm btn-danger ms-2" onclick="return confirm('Are you sure you want to reject this trade?');">
+                        Reject
+                      </button>
+                    </form>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-muted">No trades received.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <style>
 .recent-game-link { display: block; }

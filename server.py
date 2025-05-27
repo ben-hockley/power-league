@@ -16,7 +16,7 @@ from apscheduler.triggers.cron import CronTrigger
 from repositories.user_repository import create_user, check_password, get_user_id, get_user_by_id
 from repositories.player_repository import get_depth_chart_by_position, save_depth_chart,\
 get_players_by_team, age_league_players, create_draft_class, get_draft_class, get_free_agents,\
-cut_player, sign_player, get_star_players
+cut_player, sign_player, get_star_players, get_all_players_by_league
 from repositories.league_repository import get_standings, get_league, get_league_id,\
 get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures,\
 get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league,\
@@ -28,7 +28,9 @@ delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_mana
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id, get_next_fixture
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick,\
 check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date, \
-auto_draft_pick
+auto_draft_pick, delete_draft
+from repositories.trade_repository import get_trades_proposed, get_trades_received, save_trade, \
+delete_trade, accept_trade
 
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -164,7 +166,7 @@ def check_user_ownership(request: Request, team_id: int):
     if user_id == team_owner_id:
         return True
     else:
-        return False
+        return False        
         
 def require_team_owner(request: Request, team_id: int, user_id: int = Depends(get_current_user)):
     team_owner_id = get_team_owner_id(team_id)
@@ -358,6 +360,23 @@ async def get_league_table(request: Request, team_id: int, auth: bool = Depends(
                                                          "team_id": team_id, 
                                                          "team": team})
 
+@app.get("/players/{team_id}", response_class=HTMLResponse)
+async def get_league_players(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    team = get_team_by_id(team_id)
+    league_id = get_league_id(team_id)
+    league = get_league(league_id)
+    players = get_all_players_by_league(league_id)
+    players_and_teams = []
+    for player in players:
+        if player[8] != team_id: # do not include user teams own players
+            player_card = [player, get_team_by_id(player[8])]  # player[8] is the team_id
+            players_and_teams.append(player_card)
+    return templates.TemplateResponse("players.html", {"request": request,
+                                                        "players": players_and_teams, 
+                                                        "league": league, 
+                                                        "team_id": team_id,
+                                                        "team": team})
+
 @app.get("/freeagents/{team_id}", response_class=HTMLResponse)
 async def get_league_free_agents(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
     # if not check_user_ownership(request, team_id):
@@ -373,6 +392,7 @@ async def get_league_free_agents(request: Request, team_id: int, auth: bool = De
                                                            "team_id": team_id, 
                                                            "team": team})
 
+# sign a free agent to the team
 @app.post("/sign_player/{team_id}")
 async def sign_player_to_team(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
 
@@ -500,6 +520,9 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
     svg_content = None
     if team[17] and team[17].endswith('.svg'):
         svg_content = get_svg_content(team[17])
+    
+    trades_proposed = get_trades_proposed(team_id)
+    trades_received = get_trades_received(team_id)
 
     number_of_championships = get_number_of_championships(team_id)
     user_championships = get_user_championships_won(manager_id)
@@ -522,8 +545,35 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
                                                          "number_of_championships": number_of_championships,
                                                          "user_championships": user_championships,
                                                          "svg_content": svg_content,
-                                                         "draft_date": draft_date})
+                                                         "draft_date": draft_date,
+                                                         "trades_proposed": trades_proposed,
+                                                         "trades_received": trades_received})
 
+@app.post("/delete_trade/{team_id}")
+async def delete_trade_endpoint(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    trade_id = form.get("trade_id")
+
+    # delete the trade from the database
+    delete_trade(trade_id)
+
+    return RedirectResponse(url=f"/team/{team_id}", status_code=303)
+
+@app.post("/make_trade/{team_id}")
+async def make_trade(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    trade_id = form.get("trade_id")
+
+    # save the trade proposal to the database
+    accept_trade(trade_id)
+
+    return RedirectResponse(url=f"/team/{team_id}", status_code=303)
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
     # Check if the user is logged in
@@ -778,7 +828,85 @@ async def draft_player(request: Request, team_id: int, player_id: int, auth: boo
     # if the draft is over, start a new season
     if check_draft_active(league_id, draft_year) == False:
         # start a new season
+        delete_draft(league_id, draft_year) # delete the draft from the database.
         start_new_season_no_link(league_id)
+
+@app.get("/trade/{team_id}", response_class=HTMLResponse)
+async def get_trade(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    team = get_team_by_id(team_id)
+
+    league_id = get_team_league_id(team_id)
+    league = get_league(league_id)
+
+    # get all teams in the league
+    teams = get_teams_by_league_id(league_id)
+
+    user_players = get_players_by_team(team_id)
+    user_players = sorted(user_players, key=lambda x: x[6], reverse=True)  # sort by skill
+    other_teams = get_teams_by_league_id(league_id)
+    other_teams.remove(team)  # remove the user's team from the list of other teams
+
+    requested_players = get_all_players_by_league(league_id)
+    requested_players = sorted(
+    [player for player in requested_players if player[8] != team_id],
+    key=lambda x: x[6],
+    reverse=True) # sort by skill, excluding the user's own players
+
+    return templates.TemplateResponse("trade.html", {"request": request, 
+                                                     "team": team, 
+                                                     "league": league, 
+                                                     "teams": teams, 
+                                                     "team_id": team_id,
+                                                     "user_players": user_players,
+                                                     "other_teams": other_teams,
+                                                     "requested_players": requested_players})
+
+@app.post("/submit_trade/{team_id}")
+async def submit_trade(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    proposing_team_id = team_id  # the team that is proposing the trade
+    receiving_team_id = int(form.get("other_team_id")) # the team that is receiving the trade
+    players_offered = form.get("offered_players")
+    players_requested = form.get("requested_players")
+
+    # submit the trade
+    save_trade(proposing_team_id, receiving_team_id, players_offered, players_requested)
+
+    # Show a success message after submitting the trade
+    team = get_team_by_id(team_id)
+    league_id = get_team_league_id(team_id)
+    league = get_league(league_id)
+    teams = get_teams_by_league_id(league_id)
+    user_players = get_players_by_team(team_id)
+    user_players = sorted(user_players, key=lambda x: x[6], reverse=True)
+    other_teams = get_teams_by_league_id(league_id)
+    other_teams.remove(team)
+    requested_players = get_all_players_by_league(league_id)
+    requested_players = sorted(
+        [player for player in requested_players if player[8] != team_id],
+        key=lambda x: x[6],
+        reverse=True
+    )
+    return templates.TemplateResponse(
+        "trade.html",
+        {
+            "request": request,
+            "team": team,
+            "league": league,
+            "teams": teams,
+            "team_id": team_id,
+            "user_players": user_players,
+            "other_teams": other_teams,
+            "requested_players": requested_players,
+            "trade_success": True  # Pass a flag to show the message
+        }
+    )
 
 # pick best available player if the pick clock expires.
 @app.get("/fixtures/{team_id}", response_class=HTMLResponse)
@@ -829,7 +957,7 @@ async def get_admin(request: Request):
 @app.get("/age_league_players/{league_id}", response_class=HTMLResponse)
 async def age_league(request: Request, league_id: int):
     age_league_players(league_id)
-    return RedirectResponse(url=f"/admin", status_code=303)
+    return RedirectResponse(url="/admin", status_code=303)
 
 # this is one step in the process of initializing a new league season
 @app.get("/create_draft_class/{league_id}")
