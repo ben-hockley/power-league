@@ -1,0 +1,5 @@
+<svg width="220" height="220" viewBox="0 0 220 220">
+          <circle cx="110" cy="110" r="100" fill="#ff0000" stroke="#000000" stroke-width="8"/>
+          <text x="110" y="110" text-anchor="middle" font-size="48" fill="#000000" dominant-baseline="middle">⚡</text>
+          <text x="110" y="170" text-anchor="middle" font-size="22" fill="#000000" font-weight="bold" dominant-baseline="middle">blades</text>
+        </svg>

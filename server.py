@@ -27,7 +27,8 @@ create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_lea
 delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id, get_next_fixture
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick,\
-check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date
+check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date, \
+auto_draft_pick
 
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -402,13 +403,16 @@ async def get_home(request: Request, user_id: int, auth: bool = Depends(get_curr
         leagues.append(league)
 
     owned_leagues = get_owned_leagues(user_id)
+
+    user_championships = get_user_championships_won(user_id)
     
     return templates.TemplateResponse("home.html", {"request": request, 
                                                     "teams": teams, 
                                                     "leagues": leagues, 
                                                     "user_id": user_id, 
                                                     "owned_leagues": owned_leagues, 
-                                                    "user": user})
+                                                    "user": user,
+                                                    "user_championships": user_championships})
 
 @app.get("/manage_league/{league_id}", response_class=HTMLResponse)
 async def get_league_management(request: Request, league_id: int, auth: bool = Depends(require_league_owner)):
@@ -498,7 +502,7 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
         svg_content = get_svg_content(team[17])
 
     number_of_championships = get_number_of_championships(team_id)
-    user_championships = get_user_championships_won(team_id)
+    user_championships = get_user_championships_won(manager_id)
     draft_date = get_draft_date(get_team_league_id(team_id))
     return templates.TemplateResponse("team_home.html", {"request": request, 
                                                          "team_id": team_id, 
@@ -776,6 +780,7 @@ async def draft_player(request: Request, team_id: int, player_id: int, auth: boo
         # start a new season
         start_new_season_no_link(league_id)
 
+# pick best available player if the pick clock expires.
 @app.get("/fixtures/{team_id}", response_class=HTMLResponse)
 async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
     # if not check_user_ownership(request, team_id):
@@ -953,6 +958,8 @@ if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
     scheduler = BackgroundScheduler()
     trigger = CronTrigger(hour=12, minute=00) # simulate games every day at midday
     scheduler.add_job(simulate_todays_fixtures, trigger, misfire_grace_time=3600)
+    # add a job to check the draft clock every 10 seconds
+    scheduler.add_job(auto_draft_pick, 'interval', seconds=10)
     print("Scheduler started")
     scheduler.start()
 

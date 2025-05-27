@@ -69,31 +69,40 @@ def make_draft_pick(league_id: int, draft_year: int, player_id: int):
 
     # get the team id for the current pick
     pick_index = current_pick - 1
-    team_id = draft_order[pick_index][0]
 
-    cur.execute(
-    "UPDATE players SET draft_pick = ?, team_id = ? WHERE id = ?",
-    (current_pick, team_id, player_id)
-    )
-    conn.commit()
-    # increment the current pick
-    cur.execute(
-        "UPDATE drafts SET current_pick = current_pick + 1, pick_deadline = ? WHERE league_id = ? AND year = ?",
-        (datetime.now() + timedelta(minutes=5), league_id, draft_year)
-    )
-    conn.commit()
-
-    # add the player to the depth chart of the team
-    add_player_to_depth_chart(team_id, player_id)
-
-    # if it is the last pick of the draft, set the draft to inactive
-    if current_pick >= len(draft_order):
+    if pick_index >= len(draft_order):
+        # set the draft to inactive if the current pick exceeds the draft order
         cur.execute(
             "UPDATE drafts SET is_active = ? WHERE league_id = ? AND year = ?",
-            (0, league_id, draft_year)
+            (0, league_id, draft_year))
+        conn.commit()
+        conn.close()
+    else:
+        team_id = draft_order[pick_index][0]
+
+        cur.execute(
+        "UPDATE players SET draft_pick = ?, team_id = ? WHERE id = ?",
+        (current_pick, team_id, player_id)
         )
         conn.commit()
-    conn.close()
+        # increment the current pick, set the pick deadline to 5 minutes after the pick was made.
+        cur.execute(
+            "UPDATE drafts SET current_pick = current_pick + 1, pick_deadline = ? WHERE league_id = ? AND year = ?",
+            (datetime.now() + timedelta(minutes=5), league_id, draft_year)
+        )
+        conn.commit()
+
+        # add the player to the depth chart of the team
+        add_player_to_depth_chart(team_id, player_id)
+
+        # if it is the last pick of the draft, set the draft to inactive
+        if current_pick >= len(draft_order):
+            cur.execute(
+                "UPDATE drafts SET is_active = ? WHERE league_id = ? AND year = ?",
+                (0, league_id, draft_year)
+            )
+            conn.commit()
+        conn.close()
 
     
 
@@ -265,3 +274,36 @@ def get_draft_date(league_id: int):
     if date:
         return date[0]
     return None
+
+def draft_best_available_player(league_id: int, draft_year: int):
+    """
+    Draft the best available player for a given league and draft year.
+    Use this when the draft clock expires and the team has not made a pick.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # get the remaining players
+    cur.execute(
+        "SELECT * FROM players WHERE league_id = ? AND draft_year = ? AND draft_pick IS NULL ORDER BY skill DESC LIMIT 1",
+        (league_id, draft_year)
+    )
+    player = cur.fetchone()
+    conn.close()
+    if player:
+        make_draft_pick(league_id, draft_year, player[0])  # player[0] is the player_id
+
+def auto_draft_pick():
+    """
+    Automatically draft a player for the current team if the draft clock expires.
+    """
+    now = datetime.now()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM drafts WHERE is_active = 1 and pick_deadline < ?", (now,))
+    expired_picks = cur.fetchall()
+    conn.close()
+    if expired_picks:
+        for draft in expired_picks:
+            draft_best_available_player(draft[1], draft[2])  # draft[1] is league_id, draft[2] is draft_year
+    #print(f"Auto drafter ran successfully at {now}.")
