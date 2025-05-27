@@ -1,5 +1,5 @@
 from repositories.database import get_db_connection
-from repositories.league_repository import get_league_year
+from repositories.league_repository import get_league_year, get_league_status
 from avatars import random_football_avatar
 from data.names import get_random_fname, get_random_lname
 import random
@@ -306,10 +306,33 @@ def fill_new_team(teamId: int):
     # create some free agents to add to the league
     for i in range(5):
         create_free_agent_player(league_id)
+    
+    # add 6 new rookies to the next draft class.
+    league_status = get_league_status(league_id)
+    if league_status == 1: # if the league is active, add rookies to the draft class
+        for i in range(6):
+            add_rookie_to_draft_class(league_id)
 
     # Sort all depth charts after filling the team
     clean_all_depth_charts(teamId)
     sort_all_depth_charts(teamId)
+
+def add_rookie_to_draft_class(league_id: int):
+    league_year = get_league_year(league_id)
+    f_name = get_random_fname()
+    l_name = get_random_lname()
+    age = 21
+    draft_year = league_year
+    draft_pick = None # Not drafted yet
+    skill = random.randint(1, 10)
+    position = random.choice(["QB", "RB","RB", "WR","WR","WR", "OL","OL","OL","OL","OL", "DL","DL","DL","DL", "LB","LB","LB", "DB","DB","DB","DB"])
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, 0, league_id))
+    conn.commit()
+    random_football_avatar(cur.lastrowid)  # Generate avatar for the player
+    conn.close()
 
 def create_free_agent_player(leagueId: int):
     """

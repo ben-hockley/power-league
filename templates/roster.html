@@ -38,7 +38,14 @@
                                             class="badge bg-success">Rookie</span>{% endif %}
                                         <img src="/static/avatars/{{ player[0] }}.svg" alt="Avatar" class="player-avatar-hover" style="display:none; position:absolute; left:100%; top:50%; transform:translateY(-50%); width:64px; height:64px; z-index:10; border:2px solid #007bff; background:#fff; border-radius:8px;">
                                     </td>
-                                    <td>{{ player[3] }}</td>
+                                    <td>
+                                        {{ player[3] }}
+                                        {% if player[3] >= 34 %}
+                                            <span class="veteran-emoji" title="This player is a veteran and may choose to retire at the end of the season" style="cursor: pointer;">🧓</span>
+                                        {% elif player[3] < 26 %}
+                                            <span class="young-emoji" title="This is a young player who will develop at a faster pace" style="cursor: pointer;">📈</span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ player[4] }}</td>
                                     <td>{{ player[5] }}</td>
                                     <td>{{ player[7] }}</td>
