@@ -617,8 +617,9 @@ def cut_player(player_id: int):
         save_depth_chart(team_id, position, new_depth_chart_string)
 
     conn.commit()
-    # update the player's team_id to 0 (free agent)
-    cur.execute("UPDATE players SET team_id = 0 WHERE id = ?", (player_id,))
+    # update the player's team_id to 0 (free agent),
+    # also remove from trade list if applicable (free agents or newly traded players should not be on the trade list)
+    cur.execute("UPDATE players SET team_id = 0, trade_listed = 0 WHERE id = ?", (player_id,))
     conn.commit()
 
     conn.close()

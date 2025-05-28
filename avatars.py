@@ -72,10 +72,3 @@ def random_football_avatar(player_id: int):
     )
     avatar.render("static/avatars/" + str(player_id) + ".svg")
 
-
-
-
-
-#player_ids = get_all_player_ids()
-#for player_id in player_ids:
-#   random_football_avatar(player_id)

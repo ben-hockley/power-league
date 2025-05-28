@@ -158,3 +158,37 @@ def accept_trade(trade_id: int):
     conn.close()
     
     return "Trade accepted successfully."
+
+def trade_list_player(player_id: int):
+    """
+    List a player for trade.
+    
+    :param player_id: ID of the player to be listed for trade
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute(
+        "UPDATE players SET trade_listed = 1 WHERE id = ?",
+        (player_id,)
+    )
+    
+    conn.commit()
+    conn.close()
+
+def untrade_list_player(player_id: int):
+    """
+    Remove a player from the trade list.
+    
+    :param player_id: ID of the player to be removed from the trade list
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute(
+        "UPDATE players SET trade_listed = 0 WHERE id = ?",
+        (player_id,)
+    )
+    
+    conn.commit()
+    conn.close()

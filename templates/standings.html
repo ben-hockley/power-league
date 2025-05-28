@@ -5,6 +5,12 @@
 {% endblock %}
 
 {% block content %}
+<!-- If league is not active, show a message above the table -->
+{% if league[6] == 0 %}
+  <div class="alert alert-warning text-center" role="alert">
+    This league is currently inactive, Ask your league admin to activate it.
+  </div>
+{% endif %}
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-lg-10">

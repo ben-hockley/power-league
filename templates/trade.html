@@ -37,11 +37,11 @@
             {% for player in user_players %}
               <option value="{{ player[0] }}"
                 data-avatar="/static/avatars/{{ player[0] }}.svg"
-                data-name="{{ player[1] }} {{ player[2] }}"
+                data-name="{{ player[1] }} {{ player[2] }}{% if player[10] == 1 %} (Trade Listed){% endif %}"
                 data-position="{{ player[7] }}"
                 data-age="{{ player[3] }}"
                 data-skill="{{ player[6] }}">
-                {{ player[1] }} {{ player[2] }} ({{ player[7] }}, {{ player[6] }})
+                {{ player[1] }} {{ player[2] }} ({{ player[7] }}, {{ player[6] }}){% if player[10] == 1 %} <span class="badge bg-success text-white ms-1">Trade Listed</span>{% endif %}
               </option>
             {% endfor %}
           </select>
@@ -63,11 +63,11 @@
               <option value="{{ player[0] }}"
                 team_id="{{ player[8] }}"
                 data-avatar="/static/avatars/{{ player[0] }}.svg"
-                data-name="{{ player[1] }} {{ player[2] }}"
+                data-name="{{ player[1] }} {{ player[2] }}{% if player[10] == 1 %} (Trade Listed){% endif %}"
                 data-position="{{ player[7] }}"
                 data-age="{{ player[3] }}"
                 data-skill="{{ player[6] }}">
-                {{ player[1] }} {{ player[2] }} ({{ player[7] }}, {{ player[6] }})
+                {{ player[1] }} {{ player[2] }} ({{ player[7] }}, {{ player[6] }}){% if player[10] == 1 %} <span class="badge bg-warning text-dark ms-1">Trade Listed</span>{% endif %}
               </option>
             {% endfor %}
           </select>
@@ -141,11 +141,12 @@
       const position = selected.getAttribute('data-position');
       const age = selected.getAttribute('data-age');
       const skill = selected.getAttribute('data-skill');
+      const isTradeListed = selected.getAttribute('data-name').includes('(Trade Listed)');
       card.innerHTML = `
         <div class="card p-2 d-flex flex-row align-items-center" style="width: 100%; min-height:48px;">
           <img src="${avatar}" alt="Avatar" style="width:48px;height:48px;border-radius:8px;border:1px solid #007bff;background:#fff;flex-shrink:0;">
           <div class="ms-3 text-start">
-            <div class="fw-bold">${name}</div>
+            <div class="fw-bold">${name}${isTradeListed ? ' <span class="badge bg-success text-white ms-1">Trade Listed</span>' : ''}</div>
             <div class="small text-muted">${position} | Age: ${age} | Skill: ${skill}</div>
           </div>
         </div>

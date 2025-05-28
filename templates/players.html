@@ -24,6 +24,7 @@
                                     <th>Position</th>
                                     <th data-sort-method="number">Skill</th>
                                     <th>Team</th>
+                                    <th>Trade Listed?</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -52,6 +53,15 @@
                                         {{ player[1][1] }}
                                         {% else %}
                                         <span class="text-muted">Free Agent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if player[0][10] == 1 %}
+                                            <span class="badge bg-success text-white">Yes</span>
+                                        {% elif player[0][8] == 0 %}
+                                            <span class="badge bg-dark text-white">FA</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-white">No</span>
                                         {% endif %}
                                     </td>
                                     <td>

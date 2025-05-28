@@ -30,7 +30,7 @@ from repositories.draft_repository import get_players_drafted, add_draft, make_d
 check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date, \
 auto_draft_pick, delete_draft
 from repositories.trade_repository import get_trades_proposed, get_trades_received, save_trade, \
-delete_trade, accept_trade
+delete_trade, accept_trade, trade_list_player, untrade_list_player
 
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -338,6 +338,32 @@ async def roster_cut_player(request: Request, team_id: int, auth: bool = Depends
 
     # cut the player from the team
     cut_player(player_id)
+
+    return RedirectResponse(url=f"/roster/{team_id}", status_code=303)
+
+@app.post("/add_to_trade_list/{team_id}")
+async def add_player_to_trade_list(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    player_id = form.get("player_id")
+
+    # save the player to the trade list
+    trade_list_player(player_id)
+
+    return RedirectResponse(url=f"/roster/{team_id}", status_code=303)
+
+@app.post("/remove_from_trade_list/{team_id}")
+async def remove_player_from_trade_list(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    form = await request.form()
+    player_id = form.get("player_id")
+
+    # remove the player from the trade list
+    untrade_list_player(player_id)
 
     return RedirectResponse(url=f"/roster/{team_id}", status_code=303)
 

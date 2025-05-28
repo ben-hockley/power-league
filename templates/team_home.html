@@ -175,6 +175,9 @@
                             <li>
                               <span class="fw-bold">{{ player[1] }} {{ player[2] }}</span>
                               <span class="text-muted">({{ player[7] }}, Age: {{ player[3] }}, Skill: {{ player[6] }})</span>
+                              {% if player[10] == 1 %}
+                                <span class="badge bg-success ms-2">Trade Listed</span>
+                              {% endif %}
                             </li>
                           {% endfor %}
                         </ul>
@@ -190,6 +193,9 @@
                             <li>
                               <span class="fw-bold">{{ player[1] }} {{ player[2] }}</span>
                               <span class="text-muted">({{ player[7] }}, Age: {{ player[3] }}, Skill: {{ player[6] }})</span>
+                              {% if player[10] == 1 %}
+                                <span class="badge bg-success ms-2">Trade Listed</span>
+                              {% endif %}
                             </li>
                           {% endfor %}
                         </ul>

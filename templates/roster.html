@@ -28,6 +28,7 @@
                                     <th>Position</th>
                                     <th data-sort-method="number">Skill</th>
                                     <th>Cut</th>
+                                    <th>Trade List</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,6 +53,23 @@
                                     <td class="fw-bold">{{ player[6] }}</td>
                                     <td>
                                         <button class="btn btn-danger btn-sm cut-btn" data-player-id="{{ player[0] }}" data-player-name="{{ player[1] }} {{ player[2] }}">Cut</button>
+                                    </td>
+                                    <td>
+                                        {% if player[10] == 0 %}
+                                        <form method="POST" action="/add_to_trade_list/{{ team_id }}" style="display:inline;">
+                                            <input type="hidden" name="player_id" value="{{ player[0] }}">
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Add to Trade List">
+                                                Add to Trade List
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <form method="POST" action="/remove_from_trade_list/{{ team_id }}" style="display:inline;">
+                                            <input type="hidden" name="player_id" value="{{ player[0] }}">
+                                            <button type="submit" class="btn btn-secondary btn-sm" title="Remove from Trade List">
+                                                Remove from Trade List
+                                            </button>
+                                        </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
