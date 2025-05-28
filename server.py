@@ -391,6 +391,8 @@ async def get_league_players(request: Request, team_id: int, auth: bool = Depend
     team = get_team_by_id(team_id)
     league_id = get_league_id(team_id)
     league = get_league(league_id)
+    teams = get_teams_by_league_id(league_id)
+    teams.remove(team)  # remove the user's team from the list of teams
     players = get_all_players_by_league(league_id)
     players_and_teams = []
     for player in players:
@@ -401,7 +403,8 @@ async def get_league_players(request: Request, team_id: int, auth: bool = Depend
                                                         "players": players_and_teams, 
                                                         "league": league, 
                                                         "team_id": team_id,
-                                                        "team": team})
+                                                        "team": team,
+                                                        "teams": teams})
 
 @app.get("/freeagents/{team_id}", response_class=HTMLResponse)
 async def get_league_free_agents(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):

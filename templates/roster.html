@@ -17,6 +17,27 @@
                     </span>
                 </div>
                 <div class="card-body">
+                    <!-- Filter and Search Box -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" id="player-search" class="form-control" placeholder="Search players ...">
+                        </div>
+                        <div class="col-md-4">
+                            <select id="position-filter" class="form-select">
+                                <option value="">All Positions</option>
+                                {% for pos in players|map(attribute=7)|unique %}
+                                    <option value="{{ pos }}">{{ pos }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-2 mt-md-0">
+                            <select id="trade-status-filter" class="form-select">
+                                <option value="">All Trade Status</option>
+                                <option value="1">Trade Listed</option>
+                                <option value="0">Not Trade Listed</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table id="roster-table" class="table table-striped table-bordered align-middle">
                             <thead class="table-dark">
@@ -27,8 +48,8 @@
                                     <th data-sort-method="number">Draft Pick</th>
                                     <th>Position</th>
                                     <th data-sort-method="number">Skill</th>
-                                    <th>Cut</th>
-                                    <th>Trade List</th>
+                                    <th>Trade Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,24 +73,31 @@
                                     <td>{{ player[7] }}</td>
                                     <td class="fw-bold">{{ player[6] }}</td>
                                     <td>
-                                        <button class="btn btn-danger btn-sm cut-btn" data-player-id="{{ player[0] }}" data-player-name="{{ player[1] }} {{ player[2] }}">Cut</button>
+                                        {% if player[10] == 1 %}
+                                            <span class="badge bg-success">Trade Listed</span>
+                                        {% else %}
+                                            <span class="badge bg-dark">Not Trade Listed</span>
+                                        {% endif %}
                                     </td>
                                     <td>
-                                        {% if player[10] == 0 %}
-                                        <form method="POST" action="/add_to_trade_list/{{ team_id }}" style="display:inline;">
-                                            <input type="hidden" name="player_id" value="{{ player[0] }}">
-                                            <button type="submit" class="btn btn-warning btn-sm" title="Add to Trade List">
-                                                Add to Trade List
-                                            </button>
-                                        </form>
-                                        {% else %}
-                                        <form method="POST" action="/remove_from_trade_list/{{ team_id }}" style="display:inline;">
-                                            <input type="hidden" name="player_id" value="{{ player[0] }}">
-                                            <button type="submit" class="btn btn-secondary btn-sm" title="Remove from Trade List">
-                                                Remove from Trade List
-                                            </button>
-                                        </form>
-                                        {% endif %}
+                                        <div class="d-flex flex-column flex-md-row gap-1">
+                                            <button class="btn btn-danger btn-sm cut-btn" data-player-id="{{ player[0] }}" data-player-name="{{ player[1] }} {{ player[2] }}">Cut</button>
+                                            {% if player[10] == 0 %}
+                                            <form method="POST" action="/add_to_trade_list/{{ team_id }}" style="display:inline;">
+                                                <input type="hidden" name="player_id" value="{{ player[0] }}">
+                                                <button type="submit" class="btn btn-warning btn-sm" title="Add to Trade List">
+                                                    Add to Trade List
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                            <form method="POST" action="/remove_from_trade_list/{{ team_id }}" style="display:inline;">
+                                                <input type="hidden" name="player_id" value="{{ player[0] }}">
+                                                <button type="submit" class="btn btn-secondary btn-sm" title="Remove from Trade List">
+                                                    Remove from Trade List
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -105,5 +133,36 @@ document.querySelectorAll('.cut-btn').forEach(function(btn) {
         }
     });
 });
+
+// Filter and search functionality
+document.getElementById('player-search').addEventListener('input', filterRosterTable);
+document.getElementById('position-filter').addEventListener('change', filterRosterTable);
+document.getElementById('trade-status-filter').addEventListener('change', filterRosterTable);
+
+function filterRosterTable() {
+    const search = document.getElementById('player-search').value.toLowerCase();
+    const position = document.getElementById('position-filter').value;
+    const tradeStatus = document.getElementById('trade-status-filter').value;
+    document.querySelectorAll('#roster-table tbody tr').forEach(function(row) {
+        const name = row.cells[0].innerText.toLowerCase();
+        const age = row.cells[1].innerText.toLowerCase();
+        const pos = row.cells[4].innerText;
+        const tradeCell = row.cells[6].innerText;
+        let show = true;
+        if (search && !(name.includes(search) || age.includes(search) || pos.toLowerCase().includes(search))) {
+            show = false;
+        }
+        if (position && pos !== position) {
+            show = false;
+        }
+        if (tradeStatus === "1" && tradeCell.includes("Not Trade Listed")) {
+            show = false;
+        }
+        if (tradeStatus === "0" && !tradeCell.includes("Not Trade Listed")) {
+            show = false;
+        }
+        row.style.display = show ? '' : 'none';
+    });
+}
 </script>
 {% endblock %}
