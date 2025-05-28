@@ -6,80 +6,95 @@
 
 {% block content %}
   <div class="container mt-4">
-    <h1>Create New Team</h1>
-    <form method="POST" action="/create_team/{{user_id}}">
-      <div class="mb-3">
-        <label for="team_name" class="form-label">Team Name</label>
-        <input type="text" class="form-control" id="team_name" name="team_name" maxlength="50" required>
-      </div>
-      <div class="mb-3">
-        <label for="league_id" class="form-label">League</label>
-        <select class="form-select" id="league_id" name="league_id" required>
-          {% for league in public_leagues %}
-            <option value="{{ league[0] }}">{{ league[1] }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="team_primary_color" class="form-label">Primary Color</label>
-        <input type="color" class="form-control form-control-color" id="team_primary_color" name="team_primary_color" value="#000000" required>
-      </div>
-      <div class="mb-3">
-        <label for="team_secondary_color" class="form-label">Secondary Color</label>
-        <input type="color" class="form-control form-control-color" id="team_secondary_color" name="team_secondary_color" value="#FFFFFF" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Team Badge</label>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="badge_option" id="badge_url_option" value="url" checked>
-          <label class="form-check-label" for="badge_url_option">
-            Use custom badge URL
-          </label>
-        </div>
-        <div class="mb-2 ms-3" id="badge_url_fields">
-          <input type="url" class="form-control" id="team_logo" name="team_logo" placeholder="https://example.com/logo.png">
-          <img id="logo_preview" src="" alt="Logo Preview" class="img-thumbnail mt-2" style="display:none; max-width: 200px;">
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="badge_option" id="badge_default_option" value="default">
-          <label class="form-check-label" for="badge_default_option">
-            Generate badge
-          </label>
-        </div>
-        <div class="row ms-3 mt-2" id="badge_default_fields" style="display:none;">
-          <div class="col-md-4 mb-2">
-            <label for="badge_shape" class="form-label">Badge Shape</label>
-            <select class="form-select" id="badge_shape" name="badge_shape">
-              <option value="shield">Shield</option>
-              <option value="circle">Circle</option>
-              <option value="square">Square</option>
-              <option value="hex">Hexagon</option>
+    <div class="row">
+      <!-- Form Column -->
+      <div class="col-lg-7">
+        <h1>Create New Team</h1>
+        <form method="POST" action="/create_team/{{user_id}}">
+          <div class="mb-3">
+            <label for="team_name" class="form-label">Team Name</label>
+            <input type="text" class="form-control" id="team_name" name="team_name" maxlength="50" required>
+          </div>
+          <div class="mb-3">
+            <label for="league_id" class="form-label">League</label>
+            <select class="form-select" id="league_id" name="league_id" required>
+              {% for league in public_leagues %}
+                <option value="{{ league[0] }}">{{ league[1] }}</option>
+              {% endfor %}
             </select>
           </div>
-          <div class="col-md-4 mb-2">
-            <label for="badge_icon" class="form-label">Icon</label>
-            <select class="form-select" id="badge_icon" name="badge_icon">
-              <option value="⭐">⭐ Star</option>
-              <option value="🏈">🏈 Football</option>
-              <option value="🏆">🏆 Trophy</option>
-              <option value="⚡">⚡ Bolt</option>
-              <option value="🦁">🦁 Lion</option>
-              <option value="🐉">🐉 Dragon</option>
-              <option value="🦅">🦅 Eagle</option>
-              <option value="💀">💀 Skull</option>
-            </select>
+          <div class="mb-3">
+            <label for="team_primary_color" class="form-label">Primary Color</label>
+            <input type="color" class="form-control form-control-color" id="team_primary_color" name="team_primary_color" value="#000000" required>
           </div>
-          <div class="col-md-4 mb-2 d-flex align-items-end">
-            <button type="button" class="btn btn-outline-secondary w-100" id="preview_badge_btn">Preview Badge</button>
+          <div class="mb-3">
+            <label for="team_secondary_color" class="form-label">Secondary Color</label>
+            <input type="color" class="form-control form-control-color" id="team_secondary_color" name="team_secondary_color" value="#FFFFFF" required>
           </div>
-          <div class="col-12 mt-2">
-            <div id="badge_svg_preview" style="min-height:80px;"></div>
+          <div class="mb-3">
+            <label class="form-label">Team Badge</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="badge_option" id="badge_url_option" value="url" checked>
+              <label class="form-check-label" for="badge_url_option">
+                Use custom badge URL
+              </label>
+            </div>
+            <div class="mb-2 ms-3" id="badge_url_fields">
+              <input type="url" class="form-control" id="team_logo" name="team_logo" placeholder="https://example.com/logo.png">
+              <img id="logo_preview" src="" alt="Logo Preview" class="img-thumbnail mt-2" style="display:none; max-width: 200px;">
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="badge_option" id="badge_default_option" value="default">
+              <label class="form-check-label" for="badge_default_option">
+                Generate badge
+              </label>
+            </div>
+            <div class="row ms-3 mt-2" id="badge_default_fields" style="display:none;">
+              <div class="col-md-4 mb-2">
+                <label for="badge_shape" class="form-label">Badge Shape</label>
+                <select class="form-select" id="badge_shape" name="badge_shape">
+                  <option value="shield">Shield</option>
+                  <option value="circle">Circle</option>
+                  <option value="square">Square</option>
+                  <option value="hex">Hexagon</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-2">
+                <label for="badge_icon" class="form-label">Icon</label>
+                <select class="form-select" id="badge_icon" name="badge_icon">
+                  <option value="⭐">⭐ Star</option>
+                  <option value="🏈">🏈 Football</option>
+                  <option value="🏆">🏆 Trophy</option>
+                  <option value="⚡">⚡ Bolt</option>
+                  <option value="🦁">🦁 Lion</option>
+                  <option value="🐉">🐉 Dragon</option>
+                  <option value="🦅">🦅 Eagle</option>
+                  <option value="💀">💀 Skull</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-secondary w-100" id="preview_badge_btn">Preview Badge</button>
+              </div>
+              <div class="col-12 mt-2">
+                <div id="badge_svg_preview" style="min-height:80px;"></div>
+              </div>
+              <input type="hidden" id="badge_svg_data" name="badge_svg_data">
+            </div>
           </div>
-          <input type="hidden" id="badge_svg_data" name="badge_svg_data">
+          <button type="submit" class="btn btn-primary">Create Team</button>
+        </form>
+      </div>
+      <!-- Preview & Info Column -->
+      <div class="col-lg-5">
+        <div class="alert alert-info mb-4">
+          <strong>Tip:</strong> Make sure to pick two colors that contrast, so that you can clearly see your team's information.
+        </div>
+        <div class="mb-3">
+          <div class="fw-bold mb-2">Preview</div>
+          <div id="color_preview_1"></div><div id="color_preview_2"></div>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary">Create Team</button>
-    </form>
+    </div>
   </div>
   <div class="container mt-5">
     <div class="alert alert-warning text-center">
@@ -87,75 +102,7 @@
     </div>
   </div>
 {% endblock %}
+
 {% block scripts %}
-  <script>
-    // Badge option toggle
-    document.getElementById('badge_url_option').addEventListener('change', function() {
-      document.getElementById('badge_url_fields').style.display = this.checked ? 'block' : 'none';
-      document.getElementById('badge_default_fields').style.display = this.checked ? 'none' : 'block';
-    });
-    document.getElementById('badge_default_option').addEventListener('change', function() {
-      document.getElementById('badge_url_fields').style.display = this.checked ? 'none' : 'block';
-      document.getElementById('badge_default_fields').style.display = this.checked ? 'block' : 'none';
-    });
-
-    // Show/hide logo preview only if custom badge URL is selected
-    function updateLogoPreviewVisibility() {
-      const urlOption = document.getElementById('badge_url_option').checked;
-      const logoInput = document.getElementById('team_logo');
-      const logoPreview = document.getElementById('logo_preview');
-      if (urlOption && logoInput.value) {
-        logoPreview.src = logoInput.value;
-        logoPreview.style.display = 'block';
-      } else {
-        logoPreview.style.display = 'none';
-      }
-    }
-
-    // Logo URL preview
-    document.getElementById('team_logo').addEventListener('input', updateLogoPreviewVisibility);
-    document.getElementById('badge_url_option').addEventListener('change', updateLogoPreviewVisibility);
-    document.getElementById('badge_default_option').addEventListener('change', updateLogoPreviewVisibility);
-
-    // Badge SVG preview
-    document.getElementById('preview_badge_btn').addEventListener('click', function() {
-      const shape = document.getElementById('badge_shape').value;
-      const icon = document.getElementById('badge_icon').value;
-      const primary = document.getElementById('team_primary_color').value;
-      const secondary = document.getElementById('team_secondary_color').value;
-      const name = document.getElementById('team_name').value || "TEAM";
-      let svg = '';
-      // Larger SVG badge generator with smaller text
-      if (shape === 'shield') {
-        svg = `<svg width="220" height="320" viewBox="0 0 220 320">
-          <path d="M20 40 Q110 0 200 40 L200 160 Q110 280 20 160 Z" fill="${primary}" stroke="${secondary}" stroke-width="8"/>
-          <text x="110" y="120" text-anchor="middle" font-size="48" fill="${secondary}" dominant-baseline="middle">${icon}</text>
-          <text x="110" y="200" text-anchor="middle" font-size="22" fill="${secondary}" font-weight="bold" dominant-baseline="middle">${name.substring(0,16)}</text>
-        </svg>`;
-      } else if (shape === 'circle') {
-        svg = `<svg width="220" height="220" viewBox="0 0 220 220">
-          <circle cx="110" cy="110" r="100" fill="${primary}" stroke="${secondary}" stroke-width="8"/>
-          <text x="110" y="110" text-anchor="middle" font-size="48" fill="${secondary}" dominant-baseline="middle">${icon}</text>
-          <text x="110" y="170" text-anchor="middle" font-size="22" fill="${secondary}" font-weight="bold" dominant-baseline="middle">${name.substring(0,16)}</text>
-        </svg>`;
-      } else if (shape === 'square') {
-        svg = `<svg width="220" height="220" viewBox="0 0 220 220">
-          <rect x="20" y="20" width="180" height="180" rx="30" fill="${primary}" stroke="${secondary}" stroke-width="8"/>
-          <text x="110" y="110" text-anchor="middle" font-size="48" fill="${secondary}" dominant-baseline="middle">${icon}</text>
-          <text x="110" y="185" text-anchor="middle" font-size="22" fill="${secondary}" font-weight="bold" dominant-baseline="middle">${name.substring(0,16)}</text>
-        </svg>`;
-      } else if (shape === 'hex') {
-        svg = `<svg width="220" height="220" viewBox="0 0 220 220">
-          <polygon points="110,20 200,60 200,160 110,200 20,160 20,60" fill="${primary}" stroke="${secondary}" stroke-width="8"/>
-          <text x="110" y="110" text-anchor="middle" font-size="48" fill="${secondary}" dominant-baseline="middle">${icon}</text>
-          <text x="110" y="185" text-anchor="middle" font-size="22" fill="${secondary}" font-weight="bold" dominant-baseline="middle">${name.substring(0,16)}</text>
-        </svg>`;
-      }
-      document.getElementById('badge_svg_preview').innerHTML = svg;
-      document.getElementById('badge_svg_data').value = svg;
-    });
-
-    // Initialize preview on page load if needed
-    window.addEventListener('DOMContentLoaded', updateLogoPreviewVisibility);
-  </script>
+  <script src="/static/js/create_team.js"></script>
 {% endblock %}
