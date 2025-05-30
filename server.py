@@ -5,7 +5,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-#from pydantic import BaseModel, constr
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+from typing import Annotated
+from pydantic import BaseModel, StringConstraints, constr
+import os
 
 import datetime
 import string
@@ -42,6 +48,7 @@ from simulator import get_match_report, game_details_to_json, json_to_game_detai
 
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import List
+
 
 class ConnectionManager:
     def __init__(self):
@@ -114,6 +121,9 @@ app.add_middleware(SessionMiddleware,
                    same_site="lax",
                    #secure=True, # requires HTTPS, should be used in production.
                    )
+
+# Setup rate limiting
+limiter = Limiter(key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
 
 # Setup exception handling
 @app.exception_handler(StarletteHTTPException)
@@ -197,6 +207,7 @@ async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login")
+@limiter.limit("5/minute")  # Limit login attempts to 10 per minute
 async def post_login(request: Request):
     request.session.clear()  # Clear any existing session data
     form = await request.form()
@@ -217,8 +228,10 @@ async def get_create_account(request: Request):
     return templates.TemplateResponse("create_account.html", {"request": request})
 
 @app.post("/create_account")
+@limiter.limit("3/minute")  # Limit account creation attempts to 3 per minute
 async def create_account(request: Request):
     form = await request.form()
+    # Extract the data from the form
     username = form.get("username")
     password = form.get("password")
     avatar = form.get("avatarUrl")
@@ -1122,8 +1135,6 @@ def match_report_no_link(home_team_id: int, away_team_id: int):
     GameDetails = game_details
 
     return None
-
-import os
 
 # Only start the scheduler in the main process (not in the reload watcher)
 # this is to guard against multiple schedulers loading
