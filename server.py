@@ -181,6 +181,12 @@ def require_league_owner(request: Request, league_id: int, user_id: int = Depend
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     return True
 
+def require_admin(request: Request):
+    role = request.session.get("role")
+    if role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    return True
+
 @app.get("/")
 async def login(request: Request):
     return RedirectResponse(url="/login", status_code=303)
@@ -199,13 +205,12 @@ async def post_login(request: Request):
 
     # Check if the user exists and the password is correct
     if check_password(username, password):
-        request.session["user_id"] = get_user_id(username)
-        
-        user_id = request.session.get("user_id")
-        return RedirectResponse(url=f"/home/{user_id}", status_code=303)
+        user = get_user_by_id(get_user_id(username))
+        request.session["user_id"] = user[0]
+        request.session["role"] = user[4]  # Make sure get_user_by_id returns a dict or access by index
+        return RedirectResponse(url=f"/home/{user[0]}", status_code=303)
     else:
-        return templates.TemplateResponse("login.html", {"request": request,
-                                                          "error": "Invalid username or password"})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
 
 @app.get("/create_account", response_class=HTMLResponse)
 async def get_create_account(request: Request):
@@ -974,7 +979,7 @@ async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(req
 ### ADMIN PAGES ###
 
 @app.get("/admin", response_class=HTMLResponse)
-async def get_admin(request: Request):
+async def get_admin(request: Request, auth: bool = Depends(require_admin)):
     # add authentification for admin users here, do this later.
     # for now, just return the admin page
     
@@ -990,29 +995,31 @@ async def get_admin(request: Request):
 # ages a league by by one year and updates their skill accordingly
 # this is one step in the process of initializing a new league season
 @app.get("/age_league_players/{league_id}", response_class=HTMLResponse)
-async def age_league(request: Request, league_id: int):
+async def age_league(request: Request, league_id: int, auth: bool = Depends(require_admin)):
     age_league_players(league_id)
     return RedirectResponse(url="/admin", status_code=303)
 
 # this is one step in the process of initializing a new league season
 @app.get("/create_draft_class/{league_id}")
-async def add_draft_class(request: Request, league_id: int):
+async def add_draft_class(request: Request, league_id: int, auth: bool = Depends(require_admin)):
     create_draft_class(league_id)
     return RedirectResponse(url="/admin", status_code=303)
 
 # this is also one step in the process of initializing a new league season
 @app.get("/generate_schedule/{league_id}")
-async def generate_league_schedule(request: Request, league_id: int):
+async def generate_league_schedule(request: Request, league_id: int, auth: bool = Depends(require_admin)):
     generate_schedule(league_id)
     return RedirectResponse(url="/admin", status_code=303)
 
 # you should do the draft before, as this will make a new draft class.
 @app.get("/new_season/{league_id}")
-async def start_new_season(request: Request, league_id: int):
+async def start_new_season(request: Request, league_id: int, auth: bool = Depends(require_admin)):
     # this is the process of initializing a new league season
     # 1. increase the league year and season number by 1
+    record_new_champion(league_id)
+    # 1. increase the league year and season number by 1
     new_season(league_id)
-    # 2. age the players (also handles retirements)
+    # 2. age the players (includes retirements and skill changes)
     age_league_players(league_id)
     # 3. create a draft class
     create_draft_class(league_id)
@@ -1020,14 +1027,16 @@ async def start_new_season(request: Request, league_id: int):
     wipe_league_records(league_id)
     # 5. generate a new schedule
     generate_schedule(league_id)
-    # 6. order the depth charts in order of skill
+    # 6. schedule the draft by saving it as a fixture where home and away team ids are 0.
+    schedule_draft(league_id)
+    # 7. order the depth charts in order of skill
     order_depth_charts(league_id)
 
     return RedirectResponse(url="/admin", status_code=303)
 
 # this is also one step in the process of initializing a new league season
 @app.get("/wipe_league_records/{league_id}")
-async def wipe_the_league_records(request: Request, league_id: int):
+async def wipe_the_league_records(request: Request, league_id: int, auth: bool = Depends(require_admin)):
     # wipe the league records
 
     wipe_league_records(league_id)
@@ -1036,7 +1045,7 @@ async def wipe_the_league_records(request: Request, league_id: int):
 
 # simulates a game between two teams, applies the results to the teams, and saves the game to the database.
 @app.get("/match_report/{home_team_id}/{away_team_id}")
-async def match_report(request:Request, home_team_id: int, away_team_id: int):
+async def match_report(request:Request, home_team_id: int, away_team_id: int, auth: bool = Depends(require_admin)):
     GameDetails = get_match_report(home_team_id, away_team_id)
 
     # save data to the database
@@ -1063,7 +1072,7 @@ async def match_report(request:Request, home_team_id: int, away_team_id: int):
     return RedirectResponse(url="/admin", status_code=303)
 
 @app.post("/create_league")
-async def create_new_league(request: Request):
+async def create_new_league(request: Request, auth: bool = Depends(require_admin)):
     form = await request.form()
     league_name = form.get("league_name")
     league_year = form.get("league_year")
@@ -1076,10 +1085,11 @@ async def create_new_league(request: Request):
 
 # use this to trigger the start of a new league after teams have been added to a new league setup.
 @app.post("/start_new_league")
-async def start_new_league(request: Request):
+async def start_new_league(request: Request, auth: bool = Depends(require_admin)):
     form = await request.form()
     league_id = form.get("league_id")
     generate_schedule(league_id)
+    schedule_draft(league_id)
     create_draft_class(league_id)
     order_depth_charts(league_id)
     make_league_active(league_id)
