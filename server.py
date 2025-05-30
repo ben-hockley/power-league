@@ -117,7 +117,8 @@ app = FastAPI()
 app.add_middleware(SessionMiddleware,
                    secret_key=SECRET_KEY,
                    session_cookie="session_id",
-                   https_only=True,
+                   #https_only=True,
+                   https_only=False, # for development only, set to True in production.
                    same_site="lax",
                    #secure=True, # requires HTTPS, should be used in production.
                    )
@@ -207,7 +208,7 @@ async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login")
-@limiter.limit("5/minute")  # Limit login attempts to 10 per minute
+#@limiter.limit("5/minute")  # Limit login attempts to 10 per minute
 async def post_login(request: Request):
     request.session.clear()  # Clear any existing session data
     form = await request.form()
