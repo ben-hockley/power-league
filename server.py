@@ -721,17 +721,23 @@ async def game_details(request: Request, game_id: int):
 
     report = GameDetails["report"]
 
-    home_team_id = game_record[1]
-    away_team_id = game_record[2]
+    home_team_id = game_record[2]
+    away_team_id = game_record[3]
 
     home_team = get_team_by_id(home_team_id)
     away_team = get_team_by_id(away_team_id)
+
+    # if the home team is owned by the current user, then they are the home team.
+    if get_team_owner_id(home_team_id) == get_current_user(request):
+        team_id = home_team_id
+    else:
+        team_id = away_team_id
 
     
     return templates.TemplateResponse("match_report.html", {"request": request, 
                                                             "report": report,
                                                             "game_id":game_id,
-                                                            "team_id":home_team_id, # this is a bit of a workaround, as is the team object passed through, fix this later.
+                                                            "team_id": team_id, # this is a bit of a workaround, as is the team object passed through, fix this later.
                                                             "team":home_team,
                                                             "home_team": home_team, 
                                                             "away_team": away_team,
