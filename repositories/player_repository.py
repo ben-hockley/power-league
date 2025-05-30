@@ -4,6 +4,7 @@ from avatars import random_football_avatar
 from data.names import get_random_fname, get_random_lname
 import random
 import os
+import json
 
 def add_player_to_depth_chart(teamId: int, playerId: int):
     """
@@ -374,8 +375,15 @@ def get_players_by_team(teamId: int):
 def age_league_players(leagueId: int):
     """
     Age all players in the league by 1 year.
+    Save a list of retiring players as a JSON string to the leagues table in the database.
+    This function also increases/decreases their skill based on their age:
+    - If a player is under 26, their skill increases by between 0 and 3 (growth stage).
+    - If a player is over 30, their skill decreases by between 0 and 2 (decline stage).
+    - If a player is between 26 and 30, their skill increases by between -1 and 2 (prime stage).
     """
-     # get the league year
+
+    retirements = [] # List to store retiring players
+    # get the league year
     league_year = get_league_year(leagueId)
     last_year = league_year - 1
 
@@ -410,6 +418,14 @@ def age_league_players(leagueId: int):
         cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
         conn.commit()
         if age >= 34 and random.random() > 0.5:
+            # collect retirement info and append to the retirements list.
+            retirements.append({
+                    "team": "Free Agent",
+                    "position": player[7],
+                    "first_name": player[1],
+                    "last_name": player[2],
+                    "age": player[3]
+                })
             # delete the player from the database
             cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
             conn.commit()
@@ -432,17 +448,19 @@ def age_league_players(leagueId: int):
         players = cur.fetchall()
         for player in players:
             player_id = player[0]
+            cur.execute("SELECT team_name FROM teams WHERE id = ?", (team_id,))
+            team_name = cur.fetchone()[0]
             age = player[3]
             skill = player[6]
             if age is None or skill is None: # skip these players, shouldnt be in the final version
                 continue
-            # if the player is under 26, increase their skill by between 0 and 2
+            # if the player is under 26, increase their skill by between 0 and 3
             elif age < 26:
                 skill += random.randint(0, 3)
                 # if the player is over 30, decrease their skill by between 0 and 2
             elif age > 30:
                 skill -= random.randint(0, 2)
-                # if the player is between 26 and 30, increase their skill by between -1 and 1
+                # if the player is between 26 and 30, increase their skill by between -1 and 2
             else:
                 skill += random.randint(-1, 2)
 
@@ -462,13 +480,23 @@ def age_league_players(leagueId: int):
                 cur.execute("UPDATE players SET team_id = 0, league_id = 0 WHERE id = ?", (player_id,))
                 conn.commit()
                 # remove the player from the depth chart
-                position = get_player_by_id(player_id)[7]
+                player = get_player_by_id(player_id)
+                print(f"{team_name} {player[7]} {player[1]} {player[2]} has retired aged {player[3]}.")
+                position = player[7]
                 depth_chart_string = get_depth_chart_string(team_id, position)
                 if depth_chart_string is not None:
                     depth_chart_list = depth_chart_string.split(",")
                     depth_chart_list.remove(str(player_id))
                     new_depth_chart_string = ",".join(depth_chart_list)
                     save_depth_chart(team_id, position, new_depth_chart_string)
+                # collect retirement info and append to the retirements list.
+                retirements.append({
+                    "team": team_name,
+                    "position": player[7],
+                    "first_name": player[1],
+                    "last_name": player[2],
+                    "age": player[3]
+                })
                 # delete the player from the database
                 cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
                 conn.commit()
@@ -511,6 +539,16 @@ def age_league_players(leagueId: int):
         if num_dbs < 5:
             create_player(team_id, 21, last_year, random.randint(1, 3), "DB")
     conn.close()
+
+    # convert the retirements list of dictionaries into a json string to save to the database
+    retirements_json = json.dumps(retirements)
+    # save the retirements to the database
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE leagues SET last_season_retirements = ? WHERE id = ?", (retirements_json, leagueId))
+    conn.commit()
+    conn.close()
+
 
 def create_draft_class(league_id: int):
     """

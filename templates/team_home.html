@@ -80,10 +80,45 @@
           </div>
           <div>
             Championships Won: {{ number_of_championships }}
+          </div>
         </div>
       </div>
-      </div>
       </a>
+      <!-- Place the button OUTSIDE the <a> so it doesn't trigger the link -->
+      <div class="mt-3 text-end mb-4">
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#retirementsModal">
+          View Last Season's Retirements
+        </button>
+      </div>
+
+      <!-- Retirements Modal -->
+      <div class="modal fade" id="retirementsModal" tabindex="-1" aria-labelledby="retirementsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="retirementsModalLabel">Last Season's Retirements</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              {% if last_season_retirements and last_season_retirements|length > 0 %}
+                <ul class="list-group">
+                  {% for player in last_season_retirements %}
+                    <li class="list-group-item">
+                      <span class="fw-bold">{{ player['first_name'] }} {{ player.last_name }}</span>
+                      <span class="text-muted">({{ player.position }}, Age: {{ player.age }}, Team: {{ player.team }})</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div class="text-muted">Last season's retirements are unavailable as this league is new.</div>
+              {% endif %}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="col-md-4">
       {% if most_recent_game %}

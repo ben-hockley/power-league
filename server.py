@@ -21,7 +21,8 @@ from repositories.league_repository import get_standings, get_league, get_league
 get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fixtures,\
 get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league,\
 get_owned_leagues, get_league_owner_id, save_new_league, make_league_active, record_new_champion, \
-get_reigning_champion_name, get_number_of_championships, get_user_championships_won
+get_reigning_champion_name, get_number_of_championships, get_user_championships_won, \
+get_last_seasons_retirements
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id,\
 create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
 delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
@@ -91,7 +92,7 @@ def start_new_season_no_link(league_id: int):
     record_new_champion(league_id)
     # 1. increase the league year and season number by 1
     new_season(league_id)
-    # 2. age the players
+    # 2. age the players (includes retirements and skill changes)
     age_league_players(league_id)
     # 3. create a draft class
     create_draft_class(league_id)
@@ -538,7 +539,9 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
     manager_id = get_manager_id(team_id)
     manager = get_user_by_id(manager_id)
 
-    league = get_league(get_team_league_id(team_id))
+    league_id = get_team_league_id(team_id)
+
+    league = get_league(league_id)
 
     reigning_champion = get_reigning_champion_name(league[0])
     if reigning_champion:
@@ -556,6 +559,8 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
     number_of_championships = get_number_of_championships(team_id)
     user_championships = get_user_championships_won(manager_id)
     draft_date = get_draft_date(get_team_league_id(team_id))
+
+    last_season_retirements  = get_last_seasons_retirements(league_id)
     return templates.TemplateResponse("team_home.html", {"request": request, 
                                                          "team_id": team_id, 
                                                          "team": team, 
@@ -576,7 +581,8 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
                                                          "svg_content": svg_content,
                                                          "draft_date": draft_date,
                                                          "trades_proposed": trades_proposed,
-                                                         "trades_received": trades_received})
+                                                         "trades_received": trades_received,
+                                                         "last_season_retirements":last_season_retirements})
 
 @app.post("/delete_trade/{team_id}")
 async def delete_trade_endpoint(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):

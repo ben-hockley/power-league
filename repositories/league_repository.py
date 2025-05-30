@@ -1,5 +1,6 @@
 from repositories.database import get_db_connection
 from datetime import date, timedelta
+import json
 
 def get_standings(leagueId: int):
     """
@@ -429,3 +430,15 @@ def get_last_game_date(leagueId: int):
     if row:
         return row[0]
     return None
+
+def get_last_seasons_retirements(leagueId: int):
+    """
+    Get the retirements from the last season of a league.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT last_season_retirements FROM leagues WHERE id = ?", (leagueId,))
+    rows = cur.fetchone()
+    conn.close()
+    # convert the JSON string to a list of dictionaries
+    return json.loads(rows[0]) if rows and rows[0] else []
