@@ -1,4 +1,5 @@
 from repositories.database import get_db_connection
+import json
 
 def save_game(league_id: int, home_team_id: int, away_team_id: int, details_json: str):
     conn = get_db_connection()
@@ -53,3 +54,27 @@ def get_next_fixture(team_id: int):
         return row
     else:
         return None
+    
+def get_record_last_5_games(team_id: int):
+    """
+    Get the record of the last 5 games for a specific team from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT * FROM games WHERE home_team_id = ? OR away_team_id = ? ORDER BY date_time DESC LIMIT 5",
+        (team_id, team_id)
+    )
+    rows = cur.fetchall()
+    conn.close()
+
+    record = []
+    
+    if rows:
+        for row in rows:
+            game_details = json.loads(row[5])
+            if row[2] == team_id: # if home team
+                result = 'W' if game_details['home_score'] > row['away_score'] else 'L' if row['home_score'] < row['away_score'] else 'D'
+            else: # if away team
+                result = 'A' if row['home_score'] > row['away_score'] else 'H' if row['home_score'] < row['away_score'] else 'D'
+            record.append(result)

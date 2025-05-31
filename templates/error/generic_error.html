@@ -9,11 +9,14 @@
 <body class="bg-light">
     <div class="container vh-100 d-flex flex-column justify-content-center align-items-center">
         <div class="text-center">
-            <h1 class="display-1 fw-bold text-danger">Error</h1>
+            <h1 class="display-1 fw-bold text-danger">Error {{ error_code }}</h1>
             <h2 class="mb-3"></h2>
             <p class="lead mb-4">
-                Error Encountered<br>
-                Please try again later.
+                {% if error_detail %}
+                    {{ error_detail }}
+                {% else %}
+                    An unexpected error occurred. Please try again later.
+                {% endif %}
             </p>
             <a href="/" class="btn btn-primary btn-lg">Go Home</a>
         </div>

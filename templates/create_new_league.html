@@ -22,11 +22,26 @@
               <label for="league_year" class="form-label">League Year</label>
               <input type="number" class="form-control" id="league_year" name="league_year" min="1900" max="2100" required>
             </div>
+            <div class="mb-3">
+              <label for="max_teams" class="form-label">Maximum Teams</label>
+              <input type="number" class="form-control" id="max_teams" name="max_teams" min="4" max="32" required>
+              <div class="form-text">Choose between 4 and 32 teams.</div>
+            </div>
             <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" id="is_public" name="is_public">
+              <input class="form-check-input" type="checkbox" id="is_public" name="is_public" checked onchange="toggleLeagueCodeField()">
               <label class="form-check-label" for="is_public">
                 Public League
               </label>
+            </div>
+            <div class="mb-3" id="leagueCodeGroup" style="display:none;">
+              <label for="league_code" class="form-label">League Code to Join</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="league_code" name="league_code" minlength="3" maxlength="10" autocomplete="off">
+                <button type="button" class="btn btn-outline-secondary" onclick="generateLeagueCode()" tabindex="-1">
+                  <i class="bi bi-shuffle"></i> Generate
+                </button>
+              </div>
+              <div class="form-text">Min 3 Characters, Max 10 characters. Share this code with others to join your league.</div>
             </div>
             <button type="submit" class="btn btn-success w-100">Create League</button>
           </form>
@@ -35,4 +50,23 @@
     </div>
   </div>
 </div>
+<script>
+  function toggleLeagueCodeField() {
+    const isPublic = document.getElementById('is_public').checked;
+    document.getElementById('leagueCodeGroup').style.display = isPublic ? 'none' : 'block';
+    if (isPublic) {
+      document.getElementById('league_code').value = '';
+    }
+  }
+  function generateLeagueCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 10; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('league_code').value = code;
+  }
+  // Ensure correct display on page load
+  document.addEventListener('DOMContentLoaded', toggleLeagueCodeField);
+</script>
 {% endblock %}

@@ -10,8 +10,17 @@
     <p>League ID: {{ league[0] }}</p>
     <p>Season Number: {{ league[2] }}</p>
     <p>Year: {{ league[4] }}</p>
-    <p>Public League: {{ 'Yes' if league[3] else 'No' }}</p>
-    <p>Number of teams : {{ teams|length }}</p>
+    <p>Public League: {{ 'Yes' if league[3] == 1 else 'No' }}</p>
+    {% if league[3] == 0 %}
+    <p>
+      Code To join league :
+      <span id="hiddenLeagueCode" style="display:none;">{{ league[10] }}</span>
+      <button type="button" class="btn btn-link p-0 align-baseline" id="toggleLeagueCodeBtn" title="Show/Hide Code">
+        <i class="bi bi-eye"></i>
+      </button>
+    </p>
+    {% endif %}
+    <p>Number of teams : {{ teams|length }} / {{ league[9] }} (MAX)</p>
     <p>League Status: {{ 'Active' if league[6] == 1 else 'Inactive' }}</p>
     <p>Draft Date: {{ draft_date }}</p>
 </div>
@@ -40,4 +49,23 @@
     <div class="alert alert-warning mt-3">You need 2 or more teams to activate the league.</div>
     {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('toggleLeagueCodeBtn');
+    const code = document.getElementById('hiddenLeagueCode');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        if (code.style.display === 'none') {
+          code.style.display = 'inline';
+          btn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+        } else {
+          code.style.display = 'none';
+          btn.innerHTML = '<i class="bi bi-eye"></i>';
+        }
+      });
+    }
+  });
+</script>
 {% endblock %}

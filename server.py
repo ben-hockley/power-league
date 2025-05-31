@@ -28,7 +28,7 @@ get_public_leagues, get_all_leagues, get_league_year, generate_schedule, get_fix
 get_today_fixtures, delete_fixture, new_season, get_reverse_standings, create_league,\
 get_owned_leagues, get_league_owner_id, save_new_league, make_league_active, record_new_champion, \
 get_reigning_champion_name, get_number_of_championships, get_user_championships_won, \
-get_last_seasons_retirements
+get_last_seasons_retirements, get_league_by_code
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id,\
 create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
 delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id, \
@@ -139,7 +139,11 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     elif exc.status_code == 401:
         return templates.TemplateResponse("error/401.html", {"request": request}, status_code=exc.status_code)
     else:
-        return templates.TemplateResponse("error/generic_error.html", {"request": request}, status_code=exc.status_code)
+        return templates.TemplateResponse("error/generic_error.html", {
+            "request": request,
+            "error_code": exc.status_code,
+            "error_detail": getattr(exc, "detail", None)
+            }, status_code=exc.status_code)
 
 # Initialize the background scheduler
 @app.websocket("/ws/draft")
@@ -648,6 +652,7 @@ async def make_trade(request: Request, team_id: int, auth: bool = Depends(requir
     accept_trade(trade_id)
 
     return RedirectResponse(url=f"/team/{team_id}", status_code=303)
+
 @app.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
     # Check if the user is logged in
@@ -655,10 +660,16 @@ async def get_create_team(request: Request, user_id: int, auth: bool = Depends(g
      #   return RedirectResponse(url="/login", status_code=303)
     
     public_leagues = get_public_leagues()
+    public_leagues_no_teams = []
+
+    for league in public_leagues:
+        no_of_teams = len(get_teams_by_league_id(league[0]))
+        public_leagues_no_teams.append((league, no_of_teams))
+
     
     return templates.TemplateResponse("create_team.html", {"request": request, 
                                                            "user_id": user_id, 
-                                                           "public_leagues": public_leagues})
+                                                           "public_leagues": public_leagues_no_teams})
 
 @app.post("/create_team/{user_id}")
 async def post_create_team(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
@@ -668,12 +679,22 @@ async def post_create_team(request: Request, user_id: int, auth: bool = Depends(
 
     form = await request.form()
     team_name = form.get("team_name")
-    league_id = form.get("league_id")
     primary_color = form.get("team_primary_color")
     secondary_color = form.get("team_secondary_color")
     badge_option: str = form.get("badge_option")
     badge_upload = form.get("team_logo")
     badge_generated = form.get("badge_svg_data")
+    
+    private_league = form.get("join_private_league") == "on"
+    if private_league:
+        # If the user is trying to create a team in a private league, we need to check if they are allowed to join.
+        league_code = form.get("private_league_code")
+        if not get_league_by_code(league_code):
+            raise HTTPException(status_code=400, detail="Invalid league code")
+        league_id = get_league_by_code(league_code)[0]  # Get the league ID from the league code
+    else:
+        league_id = form.get("league_id")
+
 
     print(f"Badge option: {badge_option}")
 
@@ -1147,9 +1168,16 @@ async def create_new_league(request: Request, auth: bool = Depends(require_admin
     league_name = form.get("league_name")
     league_year = form.get("league_year")
     is_public = 1 if form.get("is_public") == "on" else 0  # 1 for True, 0 for False
+    max_teams = form.get("max_teams")
+
+    if is_public == 0:
+        league_code = form.get("league_code")
+    else:
+        league_code = None
+    
 
     # create a new league in the database
-    create_league(league_name, league_year, is_public)
+    create_league(league_name, league_year, is_public, max_teams, league_code)
 
     return RedirectResponse(url="/admin", status_code=303)
 

@@ -66,6 +66,15 @@
           <div class="fw-bold mb-1">
             League: {{ league[1] }}
           </div>
+          {% if league[9] == 1 %}
+          <div class="text-success mb-1">
+            <i class="bi bi-globe2"></i> Public League
+          </div>
+          {% else %}
+          <div class="text-danger mb-1">
+            <i class="bi bi-lock"></i> Private League
+          </div>
+          {% endif %}
           <div>
             Current Season: {{ league[2] }}
           </div>

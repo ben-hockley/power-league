@@ -230,13 +230,13 @@ def new_season(leagueId: int):
     conn.commit()
     conn.close()
 
-def create_league(league_name: str, league_year: int, is_public: bool):
+def create_league(league_name: str, league_year: int, is_public: bool, max_teams: int, code_to_join: str = None):
     """
     Create a new league in the database.
     """
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public, is_active) VALUES (?, ?, ?, ?, ?)", (league_name, 1, league_year, is_public, 0))
+    cur.execute("INSERT INTO leagues (name, season_number, league_year, is_public, is_active, max_teams, code_to_join) VALUES (?, ?, ?, ?, ?, ?, ?)", (league_name, 1, league_year, is_public, 0, max_teams, code_to_join))
     conn.commit()
     conn.close()
 
@@ -250,6 +250,20 @@ def get_owned_leagues(user_id: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def get_league_by_code(code: str):
+    """
+    Get a league by its join code from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM leagues WHERE code_to_join = ?", (code,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row
+    else:
+        return None
 
 def get_league_owner_id(league_id: int):
     """
