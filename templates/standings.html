@@ -35,7 +35,15 @@
                 <tbody>
                   {% for team in standings %}
                     <tr>
-                      <td class="fw-bold">{{ team[1] }}</td>
+                      <td class="fw-bold">
+                        {% if team[0] != team_id %}
+                          <a href="/team_report/{{ team_id }}/{{ team[0] }}" class="text-decoration-none">
+                            {{ team[1] }}
+                          </a>
+                        {% else %}
+                          {{ team[1] }}
+                        {% endif %}
+                      </td>
                       <td>{{ team[10]|int + team[11]|int }}</td>
                       <td class="text-success">{{ team[10] }}</td>
                       <td class="text-danger">{{ team[11] }}</td>

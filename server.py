@@ -768,6 +768,36 @@ async def game_details(request: Request, game_id: int):
                                                             "receivingStats": receivingStats,
                                                             })
 
+"""
+Returns a team report for the opponent team being scouted.
+Team id in the endpoint is just so we can redirect back to the team page through the navbar,
+this page is not about the user's team.
+"""
+@app.get("/team_report/{team_id}/{opponent_team_id}", response_class=HTMLResponse)
+async def get_team_report(request: Request, team_id: int, opponent_team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    team = get_team_by_id(team_id)
+
+    opponent = get_team_by_id(opponent_team_id)
+    # get the opponent's team's three best players
+
+    op_star_players = get_star_players(opponent_team_id)
+
+    op_manager_id = get_manager_id(opponent_team_id)
+    op_manager = get_user_by_id(op_manager_id)
+
+    return templates.TemplateResponse("team_report.html", {"request": request,
+                                                           "team": team, 
+                                                           "team_id": team_id,
+                                                           "opponent": opponent,
+                                                           "op_manager": op_manager,
+                                                           "op_star_players": op_star_players,
+                                                           })
+
+
+
 @app.get("/results/{team_id}", response_class=HTMLResponse)
 async def get_results(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
     # if not check_user_ownership(request, team_id):

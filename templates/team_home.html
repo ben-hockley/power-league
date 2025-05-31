@@ -145,21 +145,27 @@
       {% endif %}
 
       {% if next_fixture %}
-      <a href="/fixtures/{{ team_id }}" class="text-decoration-none recent-game-link">
-        <div class="card shadow mb-4 next-match-card transition-grow">
-          <div class="card-header bg-primary text-secondary">
-            Next Match
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">
-              {{ next_home_team[1] }} vs {{ next_away_team[1] }}
-            </h5>
-            <p class="card-text mb-1">
-              <strong>Date:</strong> {{ next_fixture[4] }} @ 12:00 PM GMT
-            </p>
+      <div class="card shadow mb-4 next-match-card transition-grow">
+        <div class="card-header bg-primary text-secondary">
+          Next Match
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">
+            {{ next_home_team[1] }} vs {{ next_away_team[1] }}
+          </h5>
+          <p class="card-text mb-1">
+            <strong>Date:</strong> {{ next_fixture[4] }} @ 12:00 PM GMT
+          </p>
+          <div class="d-flex justify-content-between mt-3">
+            <a href="/team_report/{{ team_id }}/{{ next_away_team[0] if next_home_team[0] == team_id else next_home_team[0] }}" class="btn btn-outline-info">
+              Scout Opponent
+            </a>
+            <a href="/fixtures/{{ team_id }}" class="btn btn-outline-primary">
+              View All Fixtures
+            </a>
           </div>
         </div>
-      </a>
+      </div>
       {% endif %}
 
       {% if star_players %}
