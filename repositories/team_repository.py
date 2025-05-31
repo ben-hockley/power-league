@@ -212,6 +212,60 @@ def order_depth_charts(league_id: int):
             conn.commit()
     conn.close()
 
+def order_depth_charts_offense_by_team(team_id: int):
+    """
+    Order the offensive depth chart by player skill for a specific team.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    positions = ["QB", "RB", "WR", "OL"]
+    
+    for position in positions:
+        cur.execute("SELECT * FROM players WHERE team_id = ? AND position = ? ORDER BY position", (team_id, position))
+        players = cur.fetchall()
+        # order the players by skill (descending)
+        players = sorted(players, key=lambda x: x[6], reverse=True)
+        # update the depth chart
+        depth_chart_string = ""
+        for player in players:
+            if depth_chart_string == "":
+                depth_chart_string = str(player[0])
+            else:
+                depth_chart_string += "," + str(player[0])
+        depth_chart_name = "depth_" + position.lower()
+        cur.execute(f"UPDATE teams SET {depth_chart_name} = ? WHERE id = ?", (depth_chart_string, team_id))
+        conn.commit()
+    
+    conn.close()
+
+def order_depth_charts_defense_by_team(team_id: int):
+    """
+    Order the defensive depth chart by player skill for a specific team.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    positions = ["DL", "LB", "DB"]
+    
+    for position in positions:
+        cur.execute("SELECT * FROM players WHERE team_id = ? AND position = ? ORDER BY position", (team_id, position))
+        players = cur.fetchall()
+        # order the players by skill (descending)
+        players = sorted(players, key=lambda x: x[6], reverse=True)
+        # update the depth chart
+        depth_chart_string = ""
+        for player in players:
+            if depth_chart_string == "":
+                depth_chart_string = str(player[0])
+            else:
+                depth_chart_string += "," + str(player[0])
+        depth_chart_name = "depth_" + position.lower()
+        cur.execute(f"UPDATE teams SET {depth_chart_name} = ? WHERE id = ?", (depth_chart_string, team_id))
+        conn.commit()
+    
+    conn.close()
+
 def get_teams_by_league_id(league_id: int):
     """
     Get all teams for a specific league from the database.

@@ -31,7 +31,8 @@ get_reigning_champion_name, get_number_of_championships, get_user_championships_
 get_last_seasons_retirements
 from repositories.team_repository import get_teams_by_user_id, get_team_by_id, get_team_owner_id,\
 create_new_team, get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
-delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id
+delete_team, get_standings, order_depth_charts, get_teams_by_league_id, get_manager_id, \
+order_depth_charts_defense_by_team, order_depth_charts_offense_by_team
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id, get_next_fixture
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick,\
 check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date, \
@@ -297,6 +298,15 @@ async def save_depth_chart_offense_changes(request: Request, team_id: int, auth:
 
     return RedirectResponse(url=f"/depth_chart_offense/{team_id}", status_code=303)
 
+@app.post("/sort_depth_chart_offense/{team_id}")
+async def sort_depth_chart_offense(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    # sort the depth chart by skill
+    order_depth_charts_offense_by_team(team_id)
+
+    return RedirectResponse(url=f"/depth_chart_offense/{team_id}", status_code=303)
 
 @app.get("/depth_chart_defense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart_defense(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -332,6 +342,16 @@ async def save_depth_chart_defense_changes(request: Request, team_id: int, auth:
     save_depth_chart(team_id, "DL", depth_dl)
     save_depth_chart(team_id, "LB", depth_lb)
     save_depth_chart(team_id, "DB", depth_db)
+
+    return RedirectResponse(url=f"/depth_chart_defense/{team_id}", status_code=303)
+
+@app.post("/sort_depth_chart_defense/{team_id}")
+async def sort_depth_chart_defense(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    # if not check_user_ownership(request, team_id):
+        #return RedirectResponse(url="/login", status_code=303)
+
+    # sort the depth chart by skill
+    order_depth_charts_defense_by_team(team_id)
 
     return RedirectResponse(url=f"/depth_chart_defense/{team_id}", status_code=303)
 

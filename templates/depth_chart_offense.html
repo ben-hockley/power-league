@@ -8,7 +8,13 @@
 {% block content %}
 <button class="btn btn-primary">Offense</button>
 <a href="/depth_chart_defense/{{team_id}}"><button class="btn btn-secondary">Defense</button></a>
-  <div class="container">
+
+<!-- Auto Sort Depth Chart Form -->
+<form id="autoSortForm" action="/sort_depth_chart_offense/{{team_id}}" method="POST" style="display:inline;">
+  <button type="button" class="btn btn-warning ms-2" onclick="confirmAutoSort()">Auto Sort Depth Chart</button>
+</form>
+
+<div class="container">
     <!-- Left Panel -->
     <div class="left-panel">
       <h2>Lineup - Offense</h2>
@@ -145,5 +151,12 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="/static/js/depth_chart_offense.js"></script>
+<script>
+  function confirmAutoSort() {
+    if (confirm('Are you sure you want to auto order the offensive depth chart?')) {
+      document.getElementById('autoSortForm').submit();
+    }
+  }
+</script>
+<script src="/static/js/depth_chart_offense.js"></script>
 {% endblock %}
