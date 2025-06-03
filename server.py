@@ -5,6 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
+from routers import accounts
+
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -116,6 +118,9 @@ def start_new_season_no_link(league_id: int):
     order_depth_charts(league_id)
 
 app = FastAPI()
+app.include_router(accounts.router)
+
+
 app.add_middleware(SessionMiddleware,
                    secret_key=SECRET_KEY,
                    session_cookie="session_id",
@@ -176,57 +181,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def login(request: Request):
     return RedirectResponse(url="/login", status_code=303)
 
-@app.get("/login", response_class=HTMLResponse)
-async def get_login(request: Request):
-    request.session.clear()  # Clear any existing session data
-    return templates.TemplateResponse("login.html", {"request": request})
-
-@app.post("/login")
-#@limiter.limit("5/minute")  # Limit login attempts to 10 per minute
-async def post_login(request: Request):
-    request.session.clear()  # Clear any existing session data
-    form = await request.form()
-    username = form.get("username")
-    password = form.get("password")
-
-    # Check if the user exists and the password is correct
-    if check_password(username, password):
-        user = get_user_by_id(get_user_id(username))
-        request.session["user_id"] = user[0]
-        request.session["role"] = user[4]  # Make sure get_user_by_id returns a dict or access by index
-        return RedirectResponse(url=f"/home/{user[0]}", status_code=303)
-    else:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
-
-@app.get("/create_account", response_class=HTMLResponse)
-async def get_create_account(request: Request):
-    return templates.TemplateResponse("create_account.html", {"request": request})
-
-@app.post("/create_account")
-@limiter.limit("3/minute")  # Limit account creation attempts to 3 per minute
-async def create_account(request: Request):
-    form = await request.form()
-    # Extract the data from the form
-    username = form.get("username")
-    password = form.get("password")
-    avatar = form.get("avatarUrl")
-
-    # Check if the user already exists
-    create_user(username, password, avatar)
-    return RedirectResponse(url="/login", status_code=303)
-
-@app.get("/delete_team/{team_id}", response_class=HTMLResponse)
+# change to post request
+@app.post("/delete_team/{team_id}")
 async def delete_user_team(
-    request: Request,
-    team_id: int,
-    auth: bool = Depends(require_team_owner)):
-    # if not check_user_ownership(request, team_id):
-        #return RedirectResponse(url="/login", status_code=303)
-
-    # delete the team from the database
+    request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    """
+    Delete a team from the database.
+    This function checks if the user is the owner of the team before allowing deletion.
+    """
     delete_team(team_id)
-
-    # redirect to the home page
     user_id = get_current_user(request)
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
 
@@ -707,11 +670,6 @@ async def post_create_new_league(request: Request, user_id: int, auth: bool = De
     save_new_league(league_name, league_year, is_public, user_id) 
     # will set the league to inactive until the admin activates it.
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
-
-@app.get("/logout")
-async def logout(request: Request):
-    request.session.clear()
-    return RedirectResponse(url="/login", status_code=303)
 
 @app.get("/game_details/{game_id}", response_class=HTMLResponse)
 async def game_details(request: Request, game_id: int):
