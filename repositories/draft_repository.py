@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from repositories.league_repository import get_reverse_standings
 from repositories.player_repository import add_player_to_depth_chart
 
+from settings import TIME_BETWEEN_PICKS
+
 def check_draft_active(league_id: int, draft_year: int) -> bool:
     """
     Check if a draft is active for a given league and draft year.
@@ -20,6 +22,7 @@ def check_draft_active(league_id: int, draft_year: int) -> bool:
     else:
         return False
     return is_active
+
 # when the draft is started, add it to the drafts table
 def add_draft(league_id: int, draft_year: int):
     """
@@ -30,12 +33,12 @@ def add_draft(league_id: int, draft_year: int):
     # set the current pick to 1 and the pick deadline to 5 minutes from now
     cur.execute(
         "INSERT INTO drafts (league_id, year, current_pick, pick_deadline, is_active) VALUES (?, ?, ?, ?, ?)",
-        (league_id, draft_year, 1, datetime.now() + timedelta(minutes=5), True)
+        (league_id, draft_year, 1, datetime.now() + timedelta(minutes=TIME_BETWEEN_PICKS["minutes"], seconds=TIME_BETWEEN_PICKS["seconds"]), True)
     )
     conn.commit()
     conn.close()
 
-def get_draft_id(league_id: int, draft_year: int):
+def get_draft_id(league_id: int, draft_year: int) -> int:
     """
     Get the draft id for a given league and draft year.
     """
@@ -88,7 +91,7 @@ def make_draft_pick(league_id: int, draft_year: int, player_id: int):
         # increment the current pick, set the pick deadline to 5 minutes after the pick was made.
         cur.execute(
             "UPDATE drafts SET current_pick = current_pick + 1, pick_deadline = ? WHERE league_id = ? AND year = ?",
-            (datetime.now() + timedelta(minutes=5), league_id, draft_year)
+            (datetime.now() + timedelta(minutes=TIME_BETWEEN_PICKS["minutes"], seconds=TIME_BETWEEN_PICKS["seconds"]), league_id, draft_year)
         )
         conn.commit()
 
@@ -106,7 +109,7 @@ def make_draft_pick(league_id: int, draft_year: int, player_id: int):
 
     
 
-def get_remaining_players(league_id: int, draft_year: int):
+def get_remaining_players(league_id: int, draft_year: int)-> list:
     """
     Get the remaining players for a given league and draft year.
     """
@@ -151,7 +154,7 @@ def set_draft_order(draft_id: int):
     conn.commit()
     conn.close()
 '''
-def get_picking_team_id(league_id: int, draft_year: int):
+def get_picking_team_id(league_id: int, draft_year: int) -> int:
     """
     Get the team id for the current pick.
     """
@@ -175,7 +178,7 @@ def get_picking_team_id(league_id: int, draft_year: int):
         picking_team = draft_order[pick_index][0]
     return picking_team
 
-def get_last_pick(draft_year: int, league_id: int):
+def get_last_pick(draft_year: int, league_id: int) -> tuple:
     """
     Get the last pick for a given draft.
     """
@@ -201,11 +204,11 @@ def get_last_pick(draft_year: int, league_id: int):
         "SELECT * FROM players WHERE league_id = ? AND draft_year = ? AND draft_pick = ?",
         (league_id, draft_year, last_pick)
     )
-    player = cur.fetchone()
+    player: tuple = cur.fetchone()
     conn.close()
     return player
 
-def get_players_drafted(league_id: int, draft_year: int):
+def get_players_drafted(league_id: int, draft_year: int) -> tuple:
     """
     Get the players drafted for a given league and draft year.
     """
@@ -215,11 +218,11 @@ def get_players_drafted(league_id: int, draft_year: int):
         "SELECT * FROM players WHERE league_id = ? AND draft_year = ? AND draft_pick IS NOT NULL ORDER BY draft_pick ASC",
         (league_id, draft_year)
     )
-    rows = cur.fetchall()
+    rows: tuple = cur.fetchall()
     conn.close()
     return rows
 
-def get_time_on_clock(league_id: int, draft_year: int):
+def get_time_on_clock(league_id: int, draft_year: int) -> timedelta:
     """
     Get the time left on the clock for a given league and draft year.
     """
@@ -300,8 +303,10 @@ def auto_draft_pick():
     now = datetime.now()
     conn = get_db_connection()
     cur = conn.cursor()
+    # get all the active drafts where the pick deadline has passed.
     cur.execute("SELECT * FROM drafts WHERE is_active = 1 and pick_deadline < ?", (now,))
     expired_picks = cur.fetchall()
+
     conn.close()
     if expired_picks:
         for draft in expired_picks:
@@ -320,3 +325,14 @@ def delete_draft(league_id: int, draft_year: int):
     )
     conn.commit()
     conn.close()
+
+def get_done_drafts() -> list:
+    """
+    Get a list of drafts that have finished (is_active = 0), for each of these drafts, we can now start a new season.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM drafts WHERE is_active = 0")
+    expired_drafts = cur.fetchall()
+    conn.close()
+    return expired_drafts

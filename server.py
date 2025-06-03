@@ -36,7 +36,7 @@ order_depth_charts_defense_by_team, order_depth_charts_offense_by_team
 from repositories.game_repository import save_game, get_game_by_id, get_games_by_team_id, get_next_fixture
 from repositories.draft_repository import get_players_drafted, add_draft, make_draft_pick,\
 check_draft_active, get_picking_team_id, get_time_on_clock, schedule_draft, get_draft_date, \
-auto_draft_pick, delete_draft
+auto_draft_pick, delete_draft, get_done_drafts
 from repositories.trade_repository import get_trades_proposed, get_trades_received, save_trade, \
 delete_trade, accept_trade, trade_list_player, untrade_list_player
 
@@ -112,7 +112,6 @@ def start_new_season_no_link(league_id: int):
     schedule_draft(league_id)
     # 7. order the depth charts in order of skill
     order_depth_charts(league_id)
-
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware,
@@ -585,6 +584,7 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
     league_id = get_team_league_id(team_id)
 
     league = get_league(league_id)
+    league_admin = get_user_by_id(league[5])
 
     reigning_champion = get_reigning_champion_name(league[0])
     if reigning_champion:
@@ -618,6 +618,7 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
                                                          "star_players": star_players, 
                                                          "manager": manager,
                                                          "league": league,
+                                                         "league_admin": league_admin,
                                                          "reigning_champion": reigning_champion,
                                                          "number_of_championships": number_of_championships,
                                                          "user_championships": user_championships,
@@ -957,6 +958,9 @@ async def draft_player(request: Request, team_id: int, player_id: int, auth: boo
     await manager.broadcast("reload")
 
     # if the draft is over, start a new season
+    # so if the user makes the last draft pick, a new season start will be initialized (great)
+    # BUT now we have to make sure that if the last pick is an auto-pick (clock expires),
+    # a new season is also started.
     if check_draft_active(league_id, draft_year) == False:
         # start a new season
         delete_draft(league_id, draft_year) # delete the draft from the database.
@@ -1221,14 +1225,30 @@ def match_report_no_link(home_team_id: int, away_team_id: int):
 
     return None
 
+
+def do_auto_draft_picks():
+    auto_draft_pick()
+
+    # get each draft that has no finished
+    done_drafts = get_done_drafts()
+
+    for draft in done_drafts:
+        league_id = draft[1]
+        draft_year = draft[2]
+        if check_draft_active(league_id, draft_year) == False:
+        # start a new season
+            delete_draft(league_id, draft_year) # delete the draft from the database.
+            start_new_season_no_link(league_id)
+
+
 # Only start the scheduler in the main process (not in the reload watcher)
 # this is to guard against multiple schedulers loading
 if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
     scheduler = BackgroundScheduler()
     trigger = CronTrigger(hour=12, minute=00) # simulate games every day at midday
     scheduler.add_job(simulate_todays_fixtures, trigger, misfire_grace_time=3600)
-    # add a job to check the draft clock every 10 seconds
-    scheduler.add_job(auto_draft_pick, 'interval', seconds=10)
+    # add a job to check the draft clock every 10 seconds and make any picks that are yet to be made.
+    scheduler.add_job(do_auto_draft_picks, 'interval', seconds=10)
     print("Scheduler started")
     scheduler.start()
 
