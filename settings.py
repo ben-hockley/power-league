@@ -15,5 +15,5 @@ for testing purposes we can set it to smaller time periods so drafts run quickly
 '''
 TIME_BETWEEN_PICKS: dict = {
     "minutes": 0,
-    "seconds": 5
+    "seconds": 50
 }

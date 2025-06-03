@@ -18,7 +18,8 @@ def get_reverse_standings(leagueId: int):
     Get the reverse standings from the database.
     """
     conn = get_db_connection()
-    cur = conn.cursor()
+    if conn:
+        cur = conn.cursor()
     cur.execute("SELECT * FROM teams WHERE league_id = ? ORDER BY wins ASC, points_for ASC, points_against DESC", (leagueId,))
     rows = cur.fetchall()
     conn.close()
