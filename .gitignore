@@ -1,0 +1,11 @@
+# Ignore Python cache files and directories
+__pycache__/
+*.py[cod]
+# Ignore Config files
+config.py
+
+# Ignore all svg files
+*.svg
+
+# Database folder
+database/

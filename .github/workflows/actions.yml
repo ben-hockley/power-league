@@ -1,10 +1,25 @@
-name: hello-world
+name: Run Python Tests
+
 on: push
-jobs: 
-  hello-world-job:
+
+jobs:
+  test:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: echo "$(cat hello_world.txt)"
-          
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=repositories --cov=services --cov=routers --cov-report=html
+
