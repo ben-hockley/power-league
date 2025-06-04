@@ -24,6 +24,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Create dummy config.py
+        run: |
+          echo "DB_USER='testuser'" > config.py
+          echo "DB_PASSWORD='testpass'" >> config.py
+          echo "DB_HOST='localhost'" >> config.py
+          echo "DB_NAME='testdb'" >> config.py
+
       - name: Run tests with coverage
         run: |
           pytest --cov=repositories --cov=services --cov=routers --cov-report=html

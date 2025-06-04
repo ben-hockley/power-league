@@ -4,6 +4,9 @@ __pycache__/
 # Ignore Config files
 config.py
 
+# Ignore coverage
+.coverage
+
 # Ignore all svg files
 *.svg
 
