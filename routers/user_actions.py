@@ -79,7 +79,7 @@ async def sign_player_to_team(request: Request, team_id: int, auth: bool = Depen
     form = await request.form()
     player_id = form.get("player_id")
     sign_player(player_id, team_id)
-    return RedirectResponse(url=f"/freeagents/{team_id}", status_code=303)
+    return RedirectResponse(url=f"/players/{team_id}", status_code=303)
 
 @router.post("/delete_trade/{team_id}")
 async def delete_trade_endpoint(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
