@@ -18,7 +18,7 @@ router = APIRouter()
 async def get_admin(request: Request, auth: bool = Depends(require_admin)):
     leagues = get_all_leagues()
     teams = get_all_teams()
-    return templates.TemplateResponse("admin.html", {"request": request, "leagues": leagues, "teams": teams})
+    return templates.TemplateResponse(request, "admin.html", {"request": request, "leagues": leagues, "teams": teams})
 
 @router.get("/age_league_players/{league_id}", response_class=HTMLResponse)
 async def age_league(request: Request, league_id: int, auth: bool = Depends(require_admin)):

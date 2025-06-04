@@ -31,15 +31,19 @@ async def get_depth_chart(request: Request, team_id: int, auth: bool = Depends(r
     depth_rb = get_depth_chart_by_position(team_id, "RB")
     depth_wr = get_depth_chart_by_position(team_id, "WR")
     depth_ol = get_depth_chart_by_position(team_id, "OL")
-    return templates.TemplateResponse("depth_chart_offense.html", {
-        "request": request,
-        "depth_qb": depth_qb,
-        "depth_rb": depth_rb,
-        "depth_wr": depth_wr,
-        "depth_ol": depth_ol,
-        "team_id": team_id,
-        "team": team
-    })
+    return templates.TemplateResponse(
+        request,
+        "depth_chart_offense.html",
+        {
+            "request": request,
+            "depth_qb": depth_qb,
+            "depth_rb": depth_rb,
+            "depth_wr": depth_wr,
+            "depth_ol": depth_ol,
+            "team_id": team_id,
+            "team": team
+        }
+    )
 
 @router.get("/depth_chart_defense/{team_id}", response_class=HTMLResponse)
 async def get_depth_chart_defense(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -47,26 +51,34 @@ async def get_depth_chart_defense(request: Request, team_id: int, auth: bool = D
     depth_dl = get_depth_chart_by_position(team_id, "DL")
     depth_lb = get_depth_chart_by_position(team_id, "LB")
     depth_db = get_depth_chart_by_position(team_id, "DB")
-    return templates.TemplateResponse("depth_chart_defense.html", {
-        "request": request,
-        "depth_dl": depth_dl,
-        "depth_lb": depth_lb,
-        "depth_db": depth_db,
-        "team_id": team_id,
-        "team": team
-    })
+    return templates.TemplateResponse(
+        request,
+        "depth_chart_defense.html",
+        {
+            "request": request,
+            "depth_dl": depth_dl,
+            "depth_lb": depth_lb,
+            "depth_db": depth_db,
+            "team_id": team_id,
+            "team": team
+        }
+    )
 
 @router.get("/roster/{team_id}", response_class=HTMLResponse)
 async def get_roster(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
     team = get_team_by_id(team_id)
     players = get_players_by_team(team_id)
     roster_size = len(players)
-    return templates.TemplateResponse("roster.html", {
-        "request": request,
-        "players": players,
-        "team_id": team_id,
-        "team": team
-    })
+    return templates.TemplateResponse(
+        request,
+        "roster.html",
+        {
+            "request": request,
+            "players": players,
+            "team_id": team_id,
+            "team": team
+        }
+    )
 
 @router.get("/standings/{team_id}", response_class=HTMLResponse)
 async def get_league_table(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -74,13 +86,17 @@ async def get_league_table(request: Request, team_id: int, auth: bool = Depends(
     league_id = get_league_id(team_id)
     league = get_league(league_id)
     standings = get_standings(league_id)
-    return templates.TemplateResponse("standings.html", {
-        "request": request,
-        "standings": standings,
-        "league": league,
-        "team_id": team_id,
-        "team": team
-    })
+    return templates.TemplateResponse(
+        request,
+        "standings.html",
+        {
+            "request": request,
+            "standings": standings,
+            "league": league,
+            "team_id": team_id,
+            "team": team
+        }
+    )
 
 @router.get("/players/{team_id}", response_class=HTMLResponse)
 async def get_league_players(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -95,26 +111,34 @@ async def get_league_players(request: Request, team_id: int, auth: bool = Depend
         if player[8] != team_id:
             player_card = [player, get_team_by_id(player[8])]
             players_and_teams.append(player_card)
-    return templates.TemplateResponse("players.html", {
-        "request": request,
-        "players": players_and_teams,
-        "league": league,
-        "team_id": team_id,
-        "team": team,
-        "teams": teams
-    })
+    return templates.TemplateResponse(
+        request,
+        "players.html",
+        {
+            "request": request,
+            "players": players_and_teams,
+            "league": league,
+            "team_id": team_id,
+            "team": team,
+            "teams": teams
+        }
+    )
 
 @router.get("/freeagents/{team_id}", response_class=HTMLResponse)
 async def get_league_free_agents(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
     team = get_team_by_id(team_id)
     league_id = get_team_league_id(team_id)
     free_agents = get_free_agents(league_id)
-    return templates.TemplateResponse("free_agents.html", {
-        "request": request,
-        "players": free_agents,
-        "team_id": team_id,
-        "team": team
-    })
+    return templates.TemplateResponse(
+        request,
+        "free_agents.html",
+        {
+            "request": request,
+            "players": free_agents,
+            "team_id": team_id,
+            "team": team
+        }
+    )
 
 @router.get("/home/{user_id}", response_class=HTMLResponse)
 async def get_home(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
@@ -127,15 +151,19 @@ async def get_home(request: Request, user_id: int, auth: bool = Depends(get_curr
         leagues.append(league)
     owned_leagues = get_owned_leagues(user_id)
     user_championships = get_user_championships_won(user_id)
-    return templates.TemplateResponse("home.html", {
-        "request": request,
-        "teams": teams,
-        "leagues": leagues,
-        "user_id": user_id,
-        "owned_leagues": owned_leagues,
-        "user": user,
-        "user_championships": user_championships
-    })
+    return templates.TemplateResponse(
+        request,
+        "home.html",
+        {
+            "request": request,
+            "teams": teams,
+            "leagues": leagues,
+            "user_id": user_id,
+            "owned_leagues": owned_leagues,
+            "user": user,
+            "user_championships": user_championships
+        }
+    )
 
 @router.get("/manage_league/{league_id}", response_class=HTMLResponse)
 async def get_league_management(request: Request, league_id: int, auth: bool = Depends(require_league_owner)):
@@ -144,14 +172,18 @@ async def get_league_management(request: Request, league_id: int, auth: bool = D
     teams = get_teams_by_league_id(league_id)
     user_id = get_league_owner_id(league_id)
     draft_date = get_draft_date(league_id)
-    return templates.TemplateResponse("manage_league.html", {
-        "request": request,
-        "league": league,
-        "league_id": league_id,
-        "user_id": user_id,
-        "teams": teams,
-        "draft_date": draft_date
-    })
+    return templates.TemplateResponse(
+        request,
+        "manage_league.html",
+        {
+            "request": request,
+            "league": league,
+            "league_id": league_id,
+            "user_id": user_id,
+            "teams": teams,
+            "draft_date": draft_date
+        }
+    )
 
 @router.get("/team/{team_id}", response_class=HTMLResponse)
 async def get_team(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -193,31 +225,35 @@ async def get_team(request: Request, team_id: int, auth: bool = Depends(require_
     user_championships = get_user_championships_won(manager_id)
     draft_date = get_draft_date(get_team_league_id(team_id))
     last_season_retirements = get_last_seasons_retirements(league_id)
-    return templates.TemplateResponse("team_home.html", {
-        "request": request,
-        "team_id": team_id,
-        "team": team,
-        "most_recent_game": most_recent_game,
-        "most_recent_home_team": most_recent_home_team,
-        "most_recent_away_team": most_recent_away_team,
-        "most_recent_home_score": most_recent_home_score,
-        "most_recent_away_score": most_recent_away_score,
-        "next_fixture": next_fixture,
-        "next_home_team": next_home_team,
-        "next_away_team": next_away_team,
-        "star_players": star_players,
-        "manager": manager,
-        "league": league,
-        "league_admin": league_admin,
-        "reigning_champion": reigning_champion,
-        "number_of_championships": number_of_championships,
-        "user_championships": user_championships,
-        "svg_content": svg_content,
-        "draft_date": draft_date,
-        "trades_proposed": trades_proposed,
-        "trades_received": trades_received,
-        "last_season_retirements": last_season_retirements
-    })
+    return templates.TemplateResponse(
+        request,
+        "team_home.html",
+        {
+            "request": request,
+            "team_id": team_id,
+            "team": team,
+            "most_recent_game": most_recent_game,
+            "most_recent_home_team": most_recent_home_team,
+            "most_recent_away_team": most_recent_away_team,
+            "most_recent_home_score": most_recent_home_score,
+            "most_recent_away_score": most_recent_away_score,
+            "next_fixture": next_fixture,
+            "next_home_team": next_home_team,
+            "next_away_team": next_away_team,
+            "star_players": star_players,
+            "manager": manager,
+            "league": league,
+            "league_admin": league_admin,
+            "reigning_champion": reigning_champion,
+            "number_of_championships": number_of_championships,
+            "user_championships": user_championships,
+            "svg_content": svg_content,
+            "draft_date": draft_date,
+            "trades_proposed": trades_proposed,
+            "trades_received": trades_received,
+            "last_season_retirements": last_season_retirements
+        }
+    )
 
 @router.get("/create_team/{user_id}", response_class=HTMLResponse)
 async def get_create_team(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
@@ -226,18 +262,26 @@ async def get_create_team(request: Request, user_id: int, auth: bool = Depends(g
     for league in public_leagues:
         no_of_teams = len(get_teams_by_league_id(league[0]))
         public_leagues_no_teams.append((league, no_of_teams))
-    return templates.TemplateResponse("create_team.html", {
-        "request": request,
-        "user_id": user_id,
-        "public_leagues": public_leagues_no_teams
-    })
+    return templates.TemplateResponse(
+        request,
+        "create_team.html",
+        {
+            "request": request,
+            "user_id": user_id,
+            "public_leagues": public_leagues_no_teams
+        }
+    )
 
 @router.get("/create_new_league/{user_id}", response_class=HTMLResponse)
 async def get_create_new_league(request: Request, user_id: int, auth: bool = Depends(get_current_user)):
-    return templates.TemplateResponse("create_new_league.html", {
-        "request": request,
-        "user_id": user_id
-    })
+    return templates.TemplateResponse(
+        request,
+        "create_new_league.html",
+        {
+            "request": request,
+            "user_id": user_id
+        }
+    )
 
 @router.get("/game_details/{game_id}", response_class=HTMLResponse)
 async def game_details(request: Request, game_id: int):
@@ -260,20 +304,24 @@ async def game_details(request: Request, game_id: int):
         team_id = home_team_id
     else:
         team_id = away_team_id
-    return templates.TemplateResponse("match_report.html", {
-        "request": request,
-        "report": report,
-        "game_id": game_id,
-        "team_id": team_id,
-        "team": home_team,
-        "home_team": home_team,
-        "away_team": away_team,
-        "homeScore": homeScore,
-        "awayScore": awayScore,
-        "passingStats": passingStats,
-        "rushingStats": rushingStats,
-        "receivingStats": receivingStats,
-    })
+    return templates.TemplateResponse(
+        request,
+        "match_report.html",
+        {
+            "request": request,
+            "report": report,
+            "game_id": game_id,
+            "team_id": team_id,
+            "team": home_team,
+            "home_team": home_team,
+            "away_team": away_team,
+            "homeScore": homeScore,
+            "awayScore": awayScore,
+            "passingStats": passingStats,
+            "rushingStats": rushingStats,
+            "receivingStats": receivingStats,
+        }
+    )
 
 @router.get("/team_report/{team_id}/{opponent_team_id}", response_class=HTMLResponse)
 async def get_team_report(request: Request, team_id: int, opponent_team_id: int, auth: bool = Depends(require_team_owner)):
@@ -282,14 +330,18 @@ async def get_team_report(request: Request, team_id: int, opponent_team_id: int,
     op_star_players = get_star_players(opponent_team_id)
     op_manager_id = get_manager_id(opponent_team_id)
     op_manager = get_user_by_id(op_manager_id)
-    return templates.TemplateResponse("team_report.html", {
-        "request": request,
-        "team": team,
-        "team_id": team_id,
-        "opponent": opponent,
-        "op_manager": op_manager,
-        "op_star_players": op_star_players,
-    })
+    return templates.TemplateResponse(
+        request,
+        "team_report.html",
+        {
+            "request": request,
+            "team": team,
+            "team_id": team_id,
+            "opponent": opponent,
+            "op_manager": op_manager,
+            "op_star_players": op_star_players,
+        }
+    )
 
 @router.get("/results/{team_id}", response_class=HTMLResponse)
 async def get_results(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -316,13 +368,17 @@ async def get_results(request: Request, team_id: int, auth: bool = Depends(requi
         game_headers = [game_id, home_team_id, away_team_id, home_team_name, away_team_name,
                         homeScore, awayScore, game_date]
         list_game_headers.append(game_headers)
-    return templates.TemplateResponse("results.html", {
-        "request": request,
-        "results": results,
-        "game_headers": list_game_headers,
-        "team_id": team_id,
-        "team": team
-    })
+    return templates.TemplateResponse(
+        request,
+        "results.html",
+        {
+            "request": request,
+            "results": results,
+            "game_headers": list_game_headers,
+            "team_id": team_id,
+            "team": team
+        }
+    )
 
 @router.get("/draft/{team_id}", response_class=HTMLResponse)
 async def get_draft(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -353,21 +409,25 @@ async def get_draft(request: Request, team_id: int, auth: bool = Depends(require
         picking_team_id = None
         picking_team_name = None
     draft_date = get_draft_date(league_id)
-    return templates.TemplateResponse("draft.html", {
-        "request": request,
-        "draft_class": draft_class,
-        "team_id": team_id,
-        "team": team,
-        "league": league,
-        "draft_order": draft_order,
-        "league_year": league_year,
-        "players_drafted": players_drafted,
-        "draft_active": draft_active,
-        "picking_team_id": picking_team_id,
-        "picking_team_name": picking_team_name,
-        "time_on_clock": time_on_clock,
-        "draft_date": draft_date
-    })
+    return templates.TemplateResponse(
+        request,
+        "draft.html",
+        {
+            "request": request,
+            "draft_class": draft_class,
+            "team_id": team_id,
+            "team": team,
+            "league": league,
+            "draft_order": draft_order,
+            "league_year": league_year,
+            "players_drafted": players_drafted,
+            "draft_active": draft_active,
+            "picking_team_id": picking_team_id,
+            "picking_team_name": picking_team_name,
+            "time_on_clock": time_on_clock,
+            "draft_date": draft_date
+        }
+    )
 
 @router.get("/trade/{team_id}", response_class=HTMLResponse)
 async def get_trade(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -385,16 +445,20 @@ async def get_trade(request: Request, team_id: int, auth: bool = Depends(require
         key=lambda x: x[6],
         reverse=True
     )
-    return templates.TemplateResponse("trade.html", {
-        "request": request,
-        "team": team,
-        "league": league,
-        "teams": teams,
-        "team_id": team_id,
-        "user_players": user_players,
-        "other_teams": other_teams,
-        "requested_players": requested_players
-    })
+    return templates.TemplateResponse(
+        request,
+        "trade.html",
+        {
+            "request": request,
+            "team": team,
+            "league": league,
+            "teams": teams,
+            "team_id": team_id,
+            "user_players": user_players,
+            "other_teams": other_teams,
+            "requested_players": requested_players
+        }
+    )
 
 @router.get("/fixtures/{team_id}", response_class=HTMLResponse)
 async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
@@ -409,11 +473,15 @@ async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(req
         date = fixture[4]
         fixtureInfo.append([home_team_name[1], away_team_name[1], date])
     draft_date = get_draft_date(league_id)
-    return templates.TemplateResponse("fixtures.html", {
-        "request": request,
-        "fixtures": fixtureInfo,
-        "team_id": team_id,
-        "team": team,
-        "league": league,
-        "draft_date": draft_date
-    })
+    return templates.TemplateResponse(
+        request,
+        "fixtures.html",
+        {
+            "request": request,
+            "fixtures": fixtureInfo,
+            "team_id": team_id,
+            "team": team,
+            "league": league,
+            "draft_date": draft_date
+        }
+    )
