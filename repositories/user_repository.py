@@ -54,7 +54,9 @@ def check_password(username: str, password: str):
     conn.close()
     if row:
         hashed_password = row[0]
-        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+        if isinstance(hashed_password, str):
+            hashed_password = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
     else:
         return False
 

@@ -63,19 +63,13 @@ def get_depth_chart(player_ids_string):
     conn = get_db_connection()
     cur = conn.cursor()
     player_ids_string = player_ids_string.strip(",")
-    player_ids = player_ids_string.split(",")
-
-    player_ids = [int(x) for x in player_ids if x.isdigit()]
-    
-    player_ids = [int(x) for x in player_ids]
+    player_ids = [pid for pid in player_ids_string.split(",") if pid]
     players = []
-
-    for id in player_ids:
-        cur.execute(f"SELECT * FROM players WHERE ID = {id}")
-        player = cur.fetchone()
-        if player:
-            players.append(player)
-    
+    for pid in player_ids:
+        cur.execute("SELECT * FROM players WHERE id = ?", (pid,))
+        row = cur.fetchone()
+        if row:
+            players.append(row[0] if isinstance(row, (list, tuple)) and len(row) == 1 else row)
     conn.close()
     return players
 
