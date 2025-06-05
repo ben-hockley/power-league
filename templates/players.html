@@ -58,6 +58,7 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {% if players|length == 0 %}
                                 {% for player in players %}
                                 <tr>
                                     <td class="fw-bold position-relative player-name-hover">
@@ -106,6 +107,11 @@
                                     </td>
                                 </tr>
                                 {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center">No players found.</td>
+                                </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>

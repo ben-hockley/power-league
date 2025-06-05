@@ -147,7 +147,8 @@ async def submit_trade(request: Request, team_id: int, auth: bool = Depends(requ
 async def draft_player(request: Request, team_id: int, player_id: int, auth: bool = Depends(require_team_owner)):
     from repositories.league_repository import get_league_id, get_league_year
     from repositories.draft_repository import make_draft_pick, check_draft_active, delete_draft
-    from server import start_new_season_no_link, manager
+    from server import manager
+    from services.draft_service import start_new_season_no_link
     league_id = get_league_id(team_id)
     draft_year = get_league_year(league_id)
     make_draft_pick(league_id, draft_year, player_id)
