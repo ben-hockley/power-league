@@ -62,8 +62,9 @@
                                 {% for player in players %}
                                 <tr>
                                     <td class="fw-bold position-relative player-name-hover">
+                                        <a href="/player/{{ team_id }}/{{ player[0][0] }}" class="text-decoration-none text-dark">
                                         {{ player[0][1] }} {{ player[0][2] }} {% if player[0][3] == 21 %}<span
-                                            class="badge bg-success">Rookie</span>{% endif %}
+                                            class="badge bg-success">Rookie</span>{% endif %}</a>
                                         <img src="/static/avatars/{{ player[0][0] }}.svg" alt="Avatar" class="player-avatar-hover" style="display:none; position:absolute; left:100%; top:50%; transform:translateY(-50%); width:64px; height:64px; z-index:10; border:2px solid #007bff; background:#fff; border-radius:8px;">
                                     </td>
                                     <td>

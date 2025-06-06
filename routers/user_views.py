@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from repositories.user_repository import get_user_by_id
 from repositories.player_repository import get_depth_chart_by_position, get_players_by_team, get_draft_class, get_free_agents,\
-get_star_players, get_all_players_by_league
+get_star_players, get_all_players_by_league, get_player_by_id
 from repositories.league_repository import get_standings, get_league, get_league_id,\
 get_public_leagues, get_league_year, get_fixtures,\
 get_reverse_standings, get_owned_leagues, get_league_owner_id, get_reigning_champion_name, get_number_of_championships, get_user_championships_won, \
@@ -485,3 +485,29 @@ async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(req
             "draft_date": draft_date
         }
     )
+
+@router.get("/player/{team_id}/{player_id}", response_class=HTMLResponse)
+async def get_player_details(request: Request, player_id: int, team_id: int, auth: bool = Depends(require_team_owner)):
+    # the user's team
+    team = get_team_by_id(team_id)
+
+    player = get_player_by_id(player_id)
+    if player:
+        player_team = get_team_by_id(player[8])
+
+        if player_team:
+            player_league = get_league(player_team[9])
+        else:
+            player_league = None
+    
+    return templates.TemplateResponse(
+        request,
+        "player.html",
+        {
+            "request": request,
+            "player": player,
+            "team_id": team_id,
+            "team": team,
+            "player_team": player_team if player else None,
+            "player_league": player_league if player else None
+        })
