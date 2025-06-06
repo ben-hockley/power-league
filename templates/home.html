@@ -107,17 +107,8 @@
       </div>
     </div>
   </div>
+{% endblock %}
 
-  <script>
-  function confirmDelete(teamId, teamName) {
-    document.getElementById('teamNameToDelete').textContent = teamName;
-    document.getElementById('teamIdToDelete').value = teamId;
-    document.getElementById('deleteTeamForm').action = `/delete_team/${teamId}`;
-    var modal = new bootstrap.Modal(document.getElementById('deleteTeamModal'));
-    modal.show();
-  }
-  </script>
-<!--
-  <script src="/static/js/home.js"></script>
--->
+{% block scripts %}
+<script src="/static/js/home.js"></script>
 {% endblock %}

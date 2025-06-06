@@ -83,3 +83,19 @@ window.addEventListener('DOMContentLoaded', function() {
     updateColorPreviews();
     updateLogoPreviewVisibility();
 });
+
+function togglePrivateLeagueField() {
+      const checkbox = document.getElementById('join_private_league');
+      const privateField = document.getElementById('privateLeagueCodeField');
+      const publicSelect = document.getElementById('publicLeagueSelect');
+      if (checkbox.checked) {
+        privateField.style.display = 'block';
+        publicSelect.style.display = 'none';
+      } else {
+        privateField.style.display = 'none';
+        publicSelect.style.display = 'block';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      togglePrivateLeagueField();
+    });

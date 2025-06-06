@@ -2,11 +2,11 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from repositories.player_repository import age_league_players, create_draft_class
 from repositories.league_repository import get_all_leagues, generate_schedule, new_season, create_league,\
-make_league_active, record_new_champion
+make_league_active, record_new_champion, get_league_year
 from repositories.team_repository import get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
 order_depth_charts
 from repositories.game_repository import save_game, get_game_by_id
-from repositories.draft_repository import schedule_draft
+from repositories.draft_repository import schedule_draft, add_draft
 from simulator import get_match_report, game_details_to_json, json_to_game_details
 from dependencies import require_admin
 from fastapi.templating import Jinja2Templates
@@ -86,4 +86,14 @@ async def start_new_league(request: Request, auth: bool = Depends(require_admin)
     create_draft_class(league_id)
     order_depth_charts(league_id)
     make_league_active(league_id)
+    return RedirectResponse(url="/admin", status_code=303)
+
+@router.post("/start_draft_admin")
+async def start_draft_admin(request: Request, auth: bool = Depends(require_admin)):
+    form = await request.form()
+    league_id = form.get("league_id")
+    draft_year = get_league_year(league_id)
+    add_draft(league_id, draft_year)
+    from server import manager
+    await manager.broadcast("reload")
     return RedirectResponse(url="/admin", status_code=303)

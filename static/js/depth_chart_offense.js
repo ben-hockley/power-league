@@ -127,3 +127,9 @@ function updateLineup() {
         playerCard.querySelector('.player-avatar').setAttribute('alt', player.textContent);
     }
 }
+
+function confirmAutoSort() {
+    if (confirm('Are you sure you want to auto order the offensive depth chart?')) {
+      document.getElementById('autoSortForm').submit();
+    }
+  }
