@@ -1,54 +1,125 @@
 {% extends "template.html" %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-7">
-            <div class="card shadow-sm">
-                {% if player %}
-                <div class="card-body text-center">
-                    <img src="/static/avatars/{{ player[0] }}.svg" alt="Player Avatar" class="rounded-circle mb-3 border border-3" style="width: 120px; height: 120px; object-fit: cover;">
-                    <h2 class="card-title mb-1">{{ player[1] }} {{ player[2] }}</h2>
-                    <h5 class="card-subtitle text-muted mb-2">
-                        {% if player_team %}
-                        {{ player_team[1] }}
+        <div class="col-md-10">
+            <div class="row">
+                <!-- Player Info (Left) -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-3 h-100">
+                        {% if player %}
+                        <div class="card-body text-center p-3">
+                            <img src="/static/avatars/{{ player[0] }}.svg" alt="Player Avatar" class="rounded-circle mb-2 border border-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h4 class="card-title mb-1">{{ player[1] }} {{ player[2] }}</h4>
+                            <h6 class="card-subtitle text-muted mb-1">
+                                {% if player_team %}
+                                {{ player_team[1] }}
+                                {% else %}
+                                Free Agent
+                                {% endif %}
+                            </h6>
+                            {% if player_team %}
+                            <div class="card-subtitle text-muted mb-2 small">{{ player_league[1] }}</div>
+                            {% endif %}
+                            <hr class="my-2">
+                            <div class="row mb-1">
+                                <div class="col-6 text-end fw-bold small">Skill:</div>
+                                <div class="col-6 text-start small">{{ player[6] }}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-6 text-end fw-bold small">Position:</div>
+                                <div class="col-6 text-start small">{{ player[7] }}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-6 text-end fw-bold small">Draft Year:</div>
+                                <div class="col-6 text-start small">{{ player[4] }}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-6 text-end fw-bold small">Draft Pick:</div>
+                                <div class="col-6 text-start small">{{ player[5] }}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-6 text-end fw-bold small">Age:</div>
+                                <div class="col-6 text-start small">{{ player[3] }}</div>
+                            </div>
+                        </div>
                         {% else %}
-                        Free Agent
+                        <div class="card-body text-center p-3">
+                            <h4 class="card-title">Player Not Found</h4>
+                            <p class="card-text small">The player you are looking for does not exist or has been removed.</p>
+                        </div>
                         {% endif %}
-                    </h5>
-                    {% if player_team %}
-                    <h6 class="card-subtitle text-muted mb-3">{{ player_league[1] }}</h6>
-                    {% endif %}
-                    <hr>
-                    <div class="row mb-2">
-                        <div class="col-6 text-end fw-bold">Skill Rating:</div>
-                        <div class="col-6 text-start">{{ player[6] }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-6 text-end fw-bold">Position:</div>
-                        <div class="col-6 text-start">{{ player[7] }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-6 text-end fw-bold">Draft Year:</div>
-                        <div class="col-6 text-start">{{ player[4] }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-6 text-end fw-bold">Draft Pick:</div>
-                        <div class="col-6 text-start">{{ player[5] }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-6 text-end fw-bold">Age:</div>
-                        <div class="col-6 text-start">{{ player[3] }}</div>
                     </div>
                 </div>
-                {% else %}
-                <div class="card-body text-center">
-                    <h2 class="card-title">Player Not Found</h2>
-                    <p class="card-text">The player you are looking for does not exist or has been removed.</p>
+                <!-- Chart (Right) -->
+                <div class="col-md-6 d-flex align-items-stretch">
+                    <div class="w-100 h-100">
+                        <div class="card shadow-sm mb-3 h-100">
+                            <div class="card-body d-flex flex-column justify-content-center p-3" style="height:100%;">
+                                <h6 class="mb-2 text-center">Player Development</h6>
+                                <div style="height:220px;">
+                                    <canvas id="developmentChart" style="height:100% !important; max-height:220px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Only render the chart if player_development is provided
+    {% if player_development %}
+    const ctx = document.getElementById('developmentChart').getContext('2d');
+    const developmentData = {{ player_development|tojson }};
+    const ageLabels = Array.from({length: 20}, (_, i) => i + 21); // [21, 22, ..., 40]
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ageLabels,
+            datasets: [{
+                label: 'Skill Over Time',
+                data: developmentData,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0,123,255,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2,
+                pointBackgroundColor: '#007bff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Age'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Skill'
+                    },
+                    min: 0,
+                    max: 20,
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
 {% endblock %}

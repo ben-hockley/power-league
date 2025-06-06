@@ -205,10 +205,17 @@ def create_random_player(teamId: int, position: str):
     draft_pick = random.randint(1, 200)
     skill = random.randint(1,10) + random.randint(0, 2) * (min(age, 26) - 21)
 
+    years_above_21 = age - 21
+    if years_above_21 > 0:
+        devhistory = ",".join("null" for _ in range(years_above_21)) # add null values for all the unknown years.
+        devhistory += f",{skill}"  # Add the current skill at the end
+    else:
+        devhistory = str(skill)  # If age is 21, just use the current skill
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id))
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, development) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, devhistory))
     
     conn.commit()
     # Update the depth chart for the position
@@ -237,10 +244,18 @@ def create_player(teamId: int, age: int, draft_year: int, skill: int, position: 
     cur.execute("SELECT league_id FROM teams WHERE id = ?", (teamId,))
     league_id = cur.fetchone()[0]
 
+    years_above_21 = age - 21
+    if years_above_21 > 0:
+        devhistory = ",".join("null" for _ in range(years_above_21)) # add null values for all the unknown years.
+        devhistory += f",{skill}"  # Add the current skill at the end
+    else:
+        devhistory = str(skill)  # If age is 21, just use the current skill
+
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (f_name, l_name, age, draft_year, draft_pick, skill, position, teamId, league_id))
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, development) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, teamId, league_id, devhistory))
     
     conn.commit()
     random_football_avatar(cur.lastrowid)  # Generate avatar for the player
@@ -323,8 +338,8 @@ def add_rookie_to_draft_class(league_id: int):
     position = random.choice(["QB", "RB","RB", "WR","WR","WR", "OL","OL","OL","OL","OL", "DL","DL","DL","DL", "LB","LB","LB", "DB","DB","DB","DB"])
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (f_name, l_name, age, draft_year, draft_pick, skill, position, 0, league_id))
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, development) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, 0, league_id, str(skill)))
     conn.commit()
     random_football_avatar(cur.lastrowid)  # Generate avatar for the player
     conn.close()
@@ -342,10 +357,17 @@ def create_free_agent_player(leagueId: int):
     skill = random.randint(1, 10)
     position = random.choice(["QB", "RB","RB", "WR","WR","WR", "OL","OL","OL","OL","OL", "DL","DL","DL","DL", "LB","LB","LB", "DB","DB","DB","DB"])
 
+    years_above_21 = age - 21
+    if years_above_21 > 0:
+        devhistory = ",".join("null" for _ in range(years_above_21)) # add null values for all the unknown years.
+        devhistory += f",{skill}"  # Add the current skill at the end
+    else:
+        devhistory = str(skill)  # If age is 21, just use the current skill
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (f_name, l_name, age, draft_year, draft_pick, skill, position, 0, leagueId))
+    cur.execute("INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, development) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f_name, l_name, age, draft_year, draft_pick, skill, position, 0, leagueId, devhistory))
     
     conn.commit()
     random_football_avatar(cur.lastrowid)  # Generate avatar for the player
@@ -390,6 +412,7 @@ def age_league_players(leagueId: int):
         player_id = player[0]
         age = player[3]
         skill = player[6]
+        development = player[11] # development history, a string of skills over the years
         if age is None or skill is None: # skip these players, shouldnt be in the final version
             continue
         # if the player is under 26, increase their skill by between 0 and 3
@@ -408,8 +431,13 @@ def age_league_players(leagueId: int):
         skill = max(1, skill)  # Ensure skill doesn't go below 1
         skill = min(20, skill)
 
+        if development is None:
+            development = str(skill)  # If development history is None, initialize it with the current skill
+        else:
+            development += f",{skill}"  # Append the new skill to the development history
+
         # update the player's skill and age in the database
-        cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
+        cur.execute("UPDATE players SET age = ?, skill = ?, development = ? WHERE id = ?", (age, skill, development, player_id))
         conn.commit()
         if age >= 34 and random.random() > 0.5:
             # collect retirement info and append to the retirements list.
@@ -446,6 +474,7 @@ def age_league_players(leagueId: int):
             team_name = cur.fetchone()[0]
             age = player[3]
             skill = player[6]
+            development = player[11]  # development history, a string of skills over the years
             if age is None or skill is None: # skip these players, shouldnt be in the final version
                 continue
             # if the player is under 26, increase their skill by between 0 and 3
@@ -464,12 +493,18 @@ def age_league_players(leagueId: int):
             skill = max(1, skill)  # Ensure skill doesn't go below 1
             skill = min(20, skill)  # Ensure skill doesn't go above 20
 
+            if development is None:
+                development = str(skill)  # If development history is None, initialize it with the current skill
+            else:
+                development += f",{skill}"  # Append the new skill to the development history
+
             # update the player's skill and age in the database
-            cur.execute("UPDATE players SET age = ?, skill = ? WHERE id = ?", (age, skill, player_id))
+            cur.execute("UPDATE players SET age = ?, skill = ?, development = ? WHERE id = ?", (age, skill, development, player_id))
             conn.commit()
 
             # if a player is 34 or older, 50% chance of retiring
             if age >= 34 and random.random() > 0.5:
+                # RETIREMENTS
                 # remove the player from the team
                 cur.execute("UPDATE players SET team_id = 0, league_id = 0 WHERE id = ?", (player_id,))
                 conn.commit()
@@ -587,8 +622,8 @@ def create_draft_class(league_id: int):
         team_id = 0  # Free agent/draft pool
 
         cur.execute(
-            "INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id)
+            "INSERT INTO players (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, development) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (f_name, l_name, age, draft_year, draft_pick, skill, position, team_id, league_id, str(skill))
         )
         random_football_avatar(cur.lastrowid)  # Generate avatar for the player
     conn.commit()

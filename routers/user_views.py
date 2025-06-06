@@ -486,6 +486,7 @@ async def load_fixtures(request: Request, team_id: int, auth: bool = Depends(req
         }
     )
 
+# view player profile
 @router.get("/player/{team_id}/{player_id}", response_class=HTMLResponse)
 async def get_player_details(request: Request, player_id: int, team_id: int, auth: bool = Depends(require_team_owner)):
     # the user's team
@@ -493,12 +494,20 @@ async def get_player_details(request: Request, player_id: int, team_id: int, aut
 
     player = get_player_by_id(player_id)
     if player:
+        # the player's team
         player_team = get_team_by_id(player[8])
 
         if player_team:
             player_league = get_league(player_team[9])
         else:
             player_league = None
+        
+        player_development = player[11] if player[11] else None
+        if player_development:
+            player_development = player_development.split(",")
+        else:
+            player_development = None
+
     
     return templates.TemplateResponse(
         request,
@@ -509,5 +518,6 @@ async def get_player_details(request: Request, player_id: int, team_id: int, aut
             "team_id": team_id,
             "team": team,
             "player_team": player_team if player else None,
-            "player_league": player_league if player else None
+            "player_league": player_league if player else None,
+            "player_development": player_development if player_development else None
         })
