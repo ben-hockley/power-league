@@ -1,5 +1,5 @@
 from repositories.league_repository import record_new_champion, new_season, generate_schedule
-from repositories.player_repository import age_league_players, create_draft_class
+from repositories.player_repository import age_league_players, create_draft_class, reset_season_stats
 from repositories.team_repository import wipe_league_records, order_depth_charts
 from repositories.draft_repository import get_done_drafts, auto_draft_pick, check_draft_active, \
 delete_draft, schedule_draft
@@ -16,11 +16,13 @@ def start_new_season_no_link(league_id: int):
     create_draft_class(league_id)
     # 4.wipe the league records
     wipe_league_records(league_id)
-    # 5. generate a new schedule
+    # 5. reset the season stats for all players
+    reset_season_stats(league_id)
+    # 6. generate a new schedule
     generate_schedule(league_id)
-    # 6. schedule the draft by saving it as a fixture where home and away team ids are 0.
+    # 7. schedule the draft by saving it as a fixture where home and away team ids are 0.
     schedule_draft(league_id)
-    # 7. order the depth charts in order of skill
+    # 8. order the depth charts in order of skill
     order_depth_charts(league_id)
 
 def do_auto_draft_picks():

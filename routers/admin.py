@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
-from repositories.player_repository import age_league_players, create_draft_class
+from repositories.player_repository import age_league_players, create_draft_class, add_passing_stats, add_rushing_stats, add_receiving_stats, reset_season_stats
 from repositories.league_repository import get_all_leagues, generate_schedule, new_season, create_league,\
 make_league_active, record_new_champion, get_league_year
 from repositories.team_repository import get_team_league_id, add_result_to_team, get_all_teams, wipe_league_records,\
@@ -42,6 +42,7 @@ async def start_new_season(request: Request, league_id: int, auth: bool = Depend
     age_league_players(league_id)
     create_draft_class(league_id)
     wipe_league_records(league_id)
+    reset_season_stats(league_id)
     generate_schedule(league_id)
     schedule_draft(league_id)
     order_depth_charts(league_id)
@@ -54,7 +55,48 @@ async def wipe_the_league_records(request: Request, league_id: int, auth: bool =
 
 @router.get("/match_report/{home_team_id}/{away_team_id}")
 async def match_report(request: Request, home_team_id: int, away_team_id: int, auth: bool = Depends(require_admin)):
-    GameDetails = get_match_report(home_team_id, away_team_id)
+    GameDetails: dict = get_match_report(home_team_id, away_team_id)
+
+    passing_stats: dict = GameDetails.get("passing_stats")
+    rushing_stats: dict = GameDetails.get("rushing_stats")
+    receiving_stats: dict = GameDetails.get("receiving_stats")
+
+    # get the box score stats for each player, and add them to their player stats profile.
+    if passing_stats:
+        for player in passing_stats.keys():
+            player_id = player.id
+            player_stats = passing_stats[player]
+            attempts = player_stats.attempts
+            completions = player_stats.completions
+            yards = player_stats.yards
+            td = player_stats.td
+
+            add_passing_stats(player_id, attempts, completions, yards, td)
+    
+    if rushing_stats:
+        for player in rushing_stats.keys():
+            player_id = player.id
+            player_stats = rushing_stats[player]
+            attempts = player_stats.attempts
+            yards = player_stats.yards
+            td = player_stats.td
+
+            add_rushing_stats(player_id, attempts, yards, td)
+    
+    if receiving_stats:
+        for player in receiving_stats.keys():
+            player_id = player.id
+            player_stats = receiving_stats[player]
+            receptions = player_stats.receptions
+            yards = player_stats.yards
+            td = player_stats.td
+
+        add_receiving_stats(player_id, receptions, yards, td)
+
+
+
+
+
     league_id = get_team_league_id(home_team_id)
     details_json = game_details_to_json(GameDetails)
     game_id = save_game(league_id, home_team_id, away_team_id, details_json)

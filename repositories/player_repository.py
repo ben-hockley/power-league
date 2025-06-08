@@ -737,3 +737,97 @@ def get_all_players_by_league(league_id: int):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def add_passing_stats(player_id: int, attempts: int, completions: int, yards: int, td: int):
+    """
+    Add passing stats to a player.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT passing_stats_season, passing_stats_career FROM players WHERE id = ?", (player_id,))
+    row = cur.fetchone()
+    if row:
+        season_stats = json.loads(row[0]) if row[0] else {}
+        career_stats = json.loads(row[1]) if row[1] else {}
+
+        # Update season stats
+        season_stats['attempts'] = season_stats.get('attempts', 0) + attempts
+        season_stats['completions'] = season_stats.get('completions', 0) + completions
+        season_stats['yards'] = season_stats.get('yards', 0) + yards
+        season_stats['td'] = season_stats.get('td', 0) + td
+
+        # Update career stats
+        career_stats['attempts'] = career_stats.get('attempts', 0) + attempts
+        career_stats['completions'] = career_stats.get('completions', 0) + completions
+        career_stats['yards'] = career_stats.get('yards', 0) + yards
+        career_stats['td'] = career_stats.get('td', 0) + td
+
+        cur.execute("UPDATE players SET passing_stats_season = ?, passing_stats_career = ? WHERE id = ?",
+                    (json.dumps(season_stats), json.dumps(career_stats), player_id))
+        conn.commit()
+
+def add_rushing_stats(player_id: int, attempts: int, yards: int, td: int):
+    """
+    Add rushing stats to a player.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT rushing_stats_season, rushing_stats_career FROM players WHERE id = ?", (player_id,))
+    row = cur.fetchone()
+    if row:
+        season_stats = json.loads(row[0]) if row[0] else {}
+        career_stats = json.loads(row[1]) if row[1] else {}
+
+        # Update season stats
+        season_stats['attempts'] = season_stats.get('attempts', 0) + attempts
+        season_stats['yards'] = season_stats.get('yards', 0) + yards
+        season_stats['td'] = season_stats.get('td', 0) + td
+
+        # Update career stats
+        career_stats['attempts'] = career_stats.get('attempts', 0) + attempts
+        career_stats['yards'] = career_stats.get('yards', 0) + yards
+        career_stats['td'] = career_stats.get('td', 0) + td
+
+        cur.execute("UPDATE players SET rushing_stats_season = ?, rushing_stats_career = ? WHERE id = ?",
+                    (json.dumps(season_stats), json.dumps(career_stats), player_id))
+        conn.commit()
+
+def add_receiving_stats(player_id: int, receptions: int, yards: int, td: int):
+    """
+    Add receiving stats to a player.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT receiving_stats_season, receiving_stats_career FROM players WHERE id = ?", (player_id,))
+    row = cur.fetchone()
+    if row:
+        season_stats = json.loads(row[0]) if row[0] else {}
+        career_stats = json.loads(row[1]) if row[1] else {}
+
+        # Update season stats
+        season_stats['receptions'] = season_stats.get('receptions', 0) + receptions
+        season_stats['yards'] = season_stats.get('yards', 0) + yards
+        season_stats['td'] = season_stats.get('td', 0) + td
+
+        # Update career stats
+        career_stats['receptions'] = career_stats.get('receptions', 0) + receptions
+        career_stats['yards'] = career_stats.get('yards', 0) + yards
+        career_stats['td'] = career_stats.get('td', 0) + td
+
+        cur.execute("UPDATE players SET receiving_stats_season = ?, receiving_stats_career = ? WHERE id = ?",
+                    (json.dumps(season_stats), json.dumps(career_stats), player_id))
+        conn.commit()
+
+def reset_season_stats(league_id: int):
+    """
+    Reset the season stats for all the players in the league.
+    Use this function to clear the stats at the end of the season.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE players SET passing_stats_season = NULL, rushing_stats_season = NULL, receiving_stats_season = NULL WHERE league_id = ?",
+        (league_id,)
+    )
+    conn.commit()
+    conn.close()

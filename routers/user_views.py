@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
+import json
 from repositories.user_repository import get_user_by_id
 from repositories.player_repository import get_depth_chart_by_position, get_players_by_team, get_draft_class, get_free_agents,\
 get_star_players, get_all_players_by_league, get_player_by_id
@@ -508,6 +509,20 @@ async def get_player_details(request: Request, player_id: int, team_id: int, aut
         else:
             player_development = None
 
+        passing_stats_season = json.loads(player[12]) if player[12] else None
+        rushing_stats_season = json.loads(player[13]) if player[13] else None
+        receiving_stats_season = json.loads(player[14]) if player[14] else None
+        passing_stats_career = json.loads(player[15]) if player[15] else None
+        rushing_stats_career = json.loads(player[16]) if player[16] else None
+        receiving_stats_career = json.loads(player[17]) if player[17] else None
+        player_stats = {
+            "passing_stats_season": passing_stats_season,
+            "rushing_stats_season": rushing_stats_season,
+            "receiving_stats_season": receiving_stats_season,
+            "passing_stats_career": passing_stats_career,
+            "rushing_stats_career": rushing_stats_career,
+            "receiving_stats_career": receiving_stats_career
+        }
     
     return templates.TemplateResponse(
         request,
@@ -519,5 +534,6 @@ async def get_player_details(request: Request, player_id: int, team_id: int, aut
             "team": team,
             "player_team": player_team if player else None,
             "player_league": player_league if player else None,
-            "player_development": player_development if player_development else None
+            "player_development": player_development if player_development else None,
+            "player_stats": player_stats if player else None
         })

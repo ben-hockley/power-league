@@ -54,3 +54,25 @@ def get_next_fixture(team_id: int):
         return row
     else:
         return None
+
+def get_home_score_from_game(game_id: int) -> int:
+    """
+    Extract the home team's score from the details_json field of a game.
+    """
+
+    details_json = get_game_by_id(game_id)[5]
+    details = json.loads(details_json)
+    return details.get("home_score")
+
+    """
+    Get the home score for a specific game.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT home_score FROM games WHERE id = ?", (game_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None
