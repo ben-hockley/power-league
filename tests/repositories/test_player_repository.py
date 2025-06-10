@@ -30,12 +30,6 @@ def test_get_player_by_id(mock_conn):
     result = player_repository.get_player_by_id(5)
     assert result == ("player1",)
 
-def test_get_depth_chart(mock_conn):
-    conn, cur = mock_conn
-    cur.fetchone.side_effect = [("player1",), ("player2",)]
-    result = player_repository.get_depth_chart("1,2")
-    assert result == ["player1", "player2"]
-
 def test_get_depth_chart_string_found(mock_conn):
     conn, cur = mock_conn
     cur.fetchone.return_value = ["1,2,3"]

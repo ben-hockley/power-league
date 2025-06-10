@@ -26,7 +26,7 @@ async def login(request: Request):
     return RedirectResponse(url="/login", status_code=303)
 
 @router.get("/depth_chart_offense/{team_id}", response_class=HTMLResponse)
-async def get_depth_chart(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+async def get_depth_chart_offense(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
     team = get_team_by_id(team_id)
     depth_qb = get_depth_chart_by_position(team_id, "QB")
     depth_rb = get_depth_chart_by_position(team_id, "RB")
@@ -588,7 +588,7 @@ async def show_receiving_leaders(request: Request, team_id: int, auth: bool = De
     leader_type = "receiving"
     leaders = get_receiving_leaders(league_id)
     leaders = sorted(leaders, key=lambda x: x[3], reverse=True) # sort by yards
-    
+
     return templates.TemplateResponse(
         request,
         "stat_leaders.html",
