@@ -82,6 +82,7 @@ async def match_report(request: Request, home_team_id: int, away_team_id: int, a
             td = player_stats.td
 
             add_rushing_stats(player_id, attempts, yards, td)
+            
     
     if receiving_stats:
         for player in receiving_stats.keys():
@@ -91,7 +92,7 @@ async def match_report(request: Request, home_team_id: int, away_team_id: int, a
             yards = player_stats.yards
             td = player_stats.td
 
-        add_receiving_stats(player_id, receptions, yards, td)
+            add_receiving_stats(player_id, receptions, yards, td)
 
 
 
