@@ -5,6 +5,22 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: testdb
+          MARIADB_USER: testuser
+          MARIADB_PASSWORD: testpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -28,8 +44,19 @@ jobs:
         run: |
           echo "DB_USER='testuser'" > config.py
           echo "DB_PASSWORD='testpass'" >> config.py
-          echo "DB_HOST='localhost'" >> config.py
+          echo "DB_HOST='127.0.0.1'" >> config.py
           echo "DB_NAME='testdb'" >> config.py
+
+      - name: Wait for MariaDB to be ready
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -utestuser -ptestpass --silent; then
+              echo "MariaDB is up!"
+              break
+            fi
+            echo "Waiting for MariaDB..."
+            sleep 2
+          done
 
       - name: Run tests with coverage
         run: |
