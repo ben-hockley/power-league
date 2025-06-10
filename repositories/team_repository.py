@@ -290,3 +290,20 @@ def get_manager_id(team_id: int):
         return row[0]
     else:
         return None
+    
+def recover_depth_chart(team_id: int, position: str):
+    """
+    Recover the depth chart for a specific position for a team.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    player_ids = []
+    cur.execute("SELECT id FROM players WHERE team_id = ? AND position = ?", (team_id, position.upper()))
+    players = cur.fetchall()
+    for player in players:
+        player_ids.append(player[0])
+    depth_chart_string = ",".join(map(str, player_ids))
+    depth_chart_name = "depth_" + position.lower()
+    cur.execute(f"UPDATE teams SET {depth_chart_name} = ? WHERE id = ?", (depth_chart_string, team_id))
+    conn.commit()
+    conn.close()

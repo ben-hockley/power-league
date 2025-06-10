@@ -69,7 +69,8 @@ def get_depth_chart(player_ids_string):
         cur.execute("SELECT * FROM players WHERE id = ?", (pid,))
         row = cur.fetchone()
         if row:
-            players.append(row[0] if isinstance(row, (list, tuple)) and len(row) == 1 else row)
+            #players.append(row[0] if isinstance(row, (list, tuple)) and len(row) == 1 else row)
+            players.append(row)
     conn.close()
     return players
 
@@ -765,6 +766,7 @@ def add_passing_stats(player_id: int, attempts: int, completions: int, yards: in
         cur.execute("UPDATE players SET passing_stats_season = ?, passing_stats_career = ? WHERE id = ?",
                     (json.dumps(season_stats), json.dumps(career_stats), player_id))
         conn.commit()
+    conn.close()
 
 def add_rushing_stats(player_id: int, attempts: int, yards: int, td: int):
     """
@@ -791,6 +793,7 @@ def add_rushing_stats(player_id: int, attempts: int, yards: int, td: int):
         cur.execute("UPDATE players SET rushing_stats_season = ?, rushing_stats_career = ? WHERE id = ?",
                     (json.dumps(season_stats), json.dumps(career_stats), player_id))
         conn.commit()
+    conn.close()
 
 def add_receiving_stats(player_id: int, receptions: int, yards: int, td: int):
     """
@@ -817,6 +820,7 @@ def add_receiving_stats(player_id: int, receptions: int, yards: int, td: int):
         cur.execute("UPDATE players SET receiving_stats_season = ?, receiving_stats_career = ? WHERE id = ?",
                     (json.dumps(season_stats), json.dumps(career_stats), player_id))
         conn.commit()
+    conn.close()
 
 def reset_season_stats(league_id: int):
     """
@@ -831,3 +835,75 @@ def reset_season_stats(league_id: int):
     )
     conn.commit()
     conn.close()
+
+def get_passing_leaders(league_id: int):
+    """
+    Get the passing leaders for the league this season.
+    Returns a list of tuples (player_id, player_name, attempts, completions, yards, td)
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, f_name, l_name, passing_stats_season
+        FROM players
+        WHERE league_id = ? AND passing_stats_season IS NOT NULL
+        ORDER BY json_extract(passing_stats_season, '$.yards') DESC
+    """, (league_id,))
+    rows = cur.fetchall()
+    leaders = []
+    for row in rows:
+        player_id = row[0]
+        f_name = row[1]
+        l_name = row[2]
+        stats = json.loads(row[3])
+        leaders.append((player_id, f"{f_name} {l_name}", stats.get('attempts', 0), stats.get('completions', 0), stats.get('yards', 0), stats.get('td', 0)))
+    conn.close()
+    return leaders
+
+def get_rushing_leaders(league_id: int):
+    """
+    Get the rushing leaders for the league this season.
+    Returns a list of tuples (player_id, player_name, attempts, yards, td)
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, f_name, l_name, rushing_stats_season
+        FROM players
+        WHERE league_id = ? AND rushing_stats_season IS NOT NULL
+        ORDER BY json_extract(rushing_stats_season, '$.yards') DESC
+    """, (league_id,))
+    rows = cur.fetchall()
+    leaders = []
+    for row in rows:
+        player_id = row[0]
+        f_name = row[1]
+        l_name = row[2]
+        stats = json.loads(row[3])
+        leaders.append((player_id, f"{f_name} {l_name}", stats.get('attempts', 0), stats.get('yards', 0), stats.get('td', 0)))
+    conn.close()
+    return leaders
+
+def get_receiving_leaders(league_id: int):
+    """
+    Get the receiving leaders for the league this season.
+    Returns a list of tuples (player_id, player_name, receptions, yards, td)
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, f_name, l_name, receiving_stats_season
+        FROM players
+        WHERE league_id = ? AND receiving_stats_season IS NOT NULL
+        ORDER BY json_extract(receiving_stats_season, '$.yards') DESC
+    """, (league_id,))
+    rows = cur.fetchall()
+    leaders = []
+    for row in rows:
+        player_id = row[0]
+        f_name = row[1]
+        l_name = row[2]
+        stats = json.loads(row[3])
+        leaders.append((player_id, f"{f_name} {l_name}", stats.get('receptions', 0), stats.get('yards', 0), stats.get('td', 0)))
+    conn.close()
+    return leaders

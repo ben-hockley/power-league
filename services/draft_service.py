@@ -1,6 +1,6 @@
 from repositories.league_repository import record_new_champion, new_season, generate_schedule
 from repositories.player_repository import age_league_players, create_draft_class, reset_season_stats
-from repositories.team_repository import wipe_league_records, order_depth_charts
+from repositories.team_repository import wipe_league_records, order_depth_charts, get_teams_by_league_id, recover_depth_chart
 from repositories.draft_repository import get_done_drafts, auto_draft_pick, check_draft_active, \
 delete_draft, schedule_draft
 
@@ -24,6 +24,8 @@ def start_new_season_no_link(league_id: int):
     schedule_draft(league_id)
     # 8. order the depth charts in order of skill
     order_depth_charts(league_id)
+    # 9. check the team depth charts for faulty depth charts and correct if necessary.
+    check_team_depth_charts(league_id)
 
 def do_auto_draft_picks():
     auto_draft_pick()
@@ -37,3 +39,12 @@ def do_auto_draft_picks():
         if check_draft_active(league_id, draft_year) == False:
             delete_draft(league_id, draft_year) # delete the draft from the database.
             start_new_season_no_link(league_id) # start a new season for the league.
+
+def check_team_depth_charts(league_id: int):
+    # checks all the teams in the league for faulty depth charts and corrects if necessary.
+    teams = get_teams_by_league_id(league_id)
+    positions = ["QB", "RB", "WR", "OL", "DL", "LB", "DB"]
+    for team in teams:
+        for i in range(2, 9):
+            if team[i] is None or team[i] == "":
+                recover_depth_chart(team[0], positions[i - 2])

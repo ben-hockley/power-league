@@ -1,0 +1,92 @@
+{% extends "template.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 text-center">
+        {% if leader_type == "passing" %}
+            Passing Leaders
+        {% elif leader_type == "rushing" %}
+            Rushing Leaders
+        {% elif leader_type == "receiving" %}
+            Receiving Leaders
+        {% else %}
+            Stat Leaders
+        {% endif %}
+    </h2>
+
+    {% if leaders and leader_type == "passing" %}
+    <table class="table table-bordered table-striped text-center">
+        <thead class="table-light">
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Attempts</th>
+                <th>Completions</th>
+                <th>Yards</th>
+                <th>TDs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leader in leaders %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ leader[1] }}</td>
+                <td>{{ leader[2] }}</td>
+                <td>{{ leader[3] }}</td>
+                <td>{{ leader[4] }}</td>
+                <td>{{ leader[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif leaders and leader_type == "rushing" %}
+    <table class="table table-bordered table-striped text-center">
+        <thead class="table-light">
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Attempts</th>
+                <th>Yards</th>
+                <th>TDs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leader in leaders %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ leader[1] }}</td>
+                <td>{{ leader[2] }}</td>
+                <td>{{ leader[3] }}</td>
+                <td>{{ leader[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif leaders and leader_type == "receiving" %}
+    <table class="table table-bordered table-striped text-center">
+        <thead class="table-light">
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Receptions</th>
+                <th>Yards</th>
+                <th>TDs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leader in leaders %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ leader[1] }}</td>
+                <td>{{ leader[2] }}</td>
+                <td>{{ leader[3] }}</td>
+                <td>{{ leader[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="alert alert-info text-center">No leaders found for this category.</div>
+    {% endif %}
+</div>
+{% endblock %}

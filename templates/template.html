@@ -73,8 +73,19 @@
         <li class="nav-item">
           <a class="nav-link" href="/depth_chart_offense/{{team_id}}">Depth Chart</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/standings/{{team_id}}">Standings</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            League
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="/standings/{{team_id}}">Standings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/passing_leaders/{{team_id}}">Passing Leaders</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/rushing_leaders/{{team_id}}">Rushing Leaders</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/receiving_leaders/{{team_id}}">Receiving Leaders</a></li>
+          </ul>
         </li>
       </ul>
 

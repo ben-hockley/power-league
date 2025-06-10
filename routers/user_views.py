@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 import json
 from repositories.user_repository import get_user_by_id
 from repositories.player_repository import get_depth_chart_by_position, get_players_by_team, get_draft_class, get_free_agents,\
-get_star_players, get_all_players_by_league, get_player_by_id
+get_star_players, get_all_players_by_league, get_player_by_id, get_passing_leaders, get_rushing_leaders, get_receiving_leaders
 from repositories.league_repository import get_standings, get_league, get_league_id,\
 get_public_leagues, get_league_year, get_fixtures,\
 get_reverse_standings, get_owned_leagues, get_league_owner_id, get_reigning_champion_name, get_number_of_championships, get_user_championships_won, \
@@ -537,3 +537,60 @@ async def get_player_details(request: Request, player_id: int, team_id: int, aut
             "player_development": player_development if player_development else None,
             "player_stats": player_stats if player else None
         })
+
+@router.get("/passing_leaders/{team_id}", response_class=HTMLResponse)
+async def show_passing_leaders(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    team = get_team_by_id(team_id)
+    league_id = get_team_league_id(team_id)
+
+    leader_type = "passing"
+    leaders = get_passing_leaders(league_id)
+    return templates.TemplateResponse(
+        request,
+        "stat_leaders.html",
+        {
+            "request": request,
+            "leader_type": leader_type,
+            "leaders": leaders,
+            "team_id": team_id,
+            "team": team
+        }
+    )
+
+@router.get("/rushing_leaders/{team_id}", response_class=HTMLResponse)
+async def show_rushing_leaders(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    team = get_team_by_id(team_id)
+    league_id = get_team_league_id(team_id)
+
+    leader_type = "rushing"
+    leaders = get_rushing_leaders(league_id)
+    return templates.TemplateResponse(
+        request,
+        "stat_leaders.html",
+        {
+            "request": request,
+            "leader_type": leader_type,
+            "leaders": leaders,
+            "team_id": team_id,
+            "team": team
+        }
+    )
+
+@router.get("/receiving_leaders/{team_id}", response_class=HTMLResponse)
+async def show_receiving_leaders(request: Request, team_id: int, auth: bool = Depends(require_team_owner)):
+    team = get_team_by_id(team_id)
+    league_id = get_team_league_id(team_id)
+
+    leader_type = "receiving"
+    leaders = get_receiving_leaders(league_id)
+    return templates.TemplateResponse(
+        request,
+        "stat_leaders.html",
+        {
+            "request": request,
+            "leader_type": leader_type,
+            "leaders": leaders,
+            "team_id": team_id,
+            "team": team
+        }
+    )
