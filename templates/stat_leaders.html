@@ -15,11 +15,13 @@
     </h2>
 
     {% if leaders and leader_type == "passing" %}
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped text-center sortable" id="leaders-table">
         <thead class="table-light">
             <tr>
                 <th>Rank</th>
                 <th>Player</th>
+                <th>Team</th>
+                <th>Position</th>
                 <th>Attempts</th>
                 <th>Completions</th>
                 <th>Yards</th>
@@ -30,7 +32,9 @@
             {% for leader in leaders %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ leader[1] }}</td>
+                <td><a href="/player/{{team_id}}/{{leader[0]}}">{{ leader[1] }}</a></td>
+                <td><a href="/team_report/{{team_id}}/{{leader[6]}}">{{ leader[7] }}</a></td>
+                <td>{{ leader[8] }}</td>
                 <td>{{ leader[2] }}</td>
                 <td>{{ leader[3] }}</td>
                 <td>{{ leader[4] }}</td>
@@ -40,11 +44,13 @@
         </tbody>
     </table>
     {% elif leaders and leader_type == "rushing" %}
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped text-center sortable" id="leaders-table">
         <thead class="table-light">
             <tr>
                 <th>Rank</th>
                 <th>Player</th>
+                <th>Team</th>
+                <th>Position</th>
                 <th>Attempts</th>
                 <th>Yards</th>
                 <th>TDs</th>
@@ -54,7 +60,9 @@
             {% for leader in leaders %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ leader[1] }}</td>
+                <td><a href="/player/{{team_id}}/{{leader[0]}}">{{ leader[1] }}</a></td>
+                <td><a href="/team_report/{{team_id}}/{{leader[5]}}">{{ leader[6] }}</a></td>
+                <td>{{ leader[7] }}</td>
                 <td>{{ leader[2] }}</td>
                 <td>{{ leader[3] }}</td>
                 <td>{{ leader[4] }}</td>
@@ -63,11 +71,13 @@
         </tbody>
     </table>
     {% elif leaders and leader_type == "receiving" %}
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped text-center sortable" id="leaders-table">
         <thead class="table-light">
             <tr>
                 <th>Rank</th>
                 <th>Player</th>
+                <th>Team</th>
+                <th>Position</th>
                 <th>Receptions</th>
                 <th>Yards</th>
                 <th>TDs</th>
@@ -77,7 +87,9 @@
             {% for leader in leaders %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ leader[1] }}</td>
+                <td><a href="/player/{{team_id}}/{{leader[0]}}">{{ leader[1] }}</a></td>
+                <td><a href="/team_report/{{team_id}}/{{leader[5]}}">{{ leader[6] }}</a></td>
+                <td>{{ leader[7] }}</td>
                 <td>{{ leader[2] }}</td>
                 <td>{{ leader[3] }}</td>
                 <td>{{ leader[4] }}</td>
@@ -89,4 +101,59 @@
         <div class="alert alert-info text-center">No leaders found for this category.</div>
     {% endif %}
 </div>
+
+<script>
+// Simple table sort for all columns except the first (Rank)
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('#leaders-table th').forEach(function(header, idx) {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            sortTable(idx);
+        });
+    });
+
+    function sortTable(n) {
+        var table = document.getElementById("leaders-table");
+        var rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        switching = true;
+        dir = "asc";
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[n];
+                y = rows[i + 1].getElementsByTagName("TD")[n];
+                let xContent = x.textContent || x.innerText;
+                let yContent = y.textContent || y.innerText;
+                // Try to compare as numbers, fallback to string
+                let xNum = parseFloat(xContent.replace(/,/g, ''));
+                let yNum = parseFloat(yContent.replace(/,/g, ''));
+                if (!isNaN(xNum) && !isNaN(yNum)) {
+                    if ((dir == "asc" && xNum > yNum) || (dir == "desc" && xNum < yNum)) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else {
+                    if ((dir == "asc" && xContent.toLowerCase() > yContent.toLowerCase()) ||
+                        (dir == "desc" && xContent.toLowerCase() < yContent.toLowerCase())) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+    }
+});
+</script>
 {% endblock %}

@@ -26,6 +26,20 @@ def get_team_by_id(team_id: int):
         return row
     else:
         return None
+    
+def get_team_name_by_id(team_id: int):
+    """
+    Get the name of a team by its ID from the database.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT team_name FROM teams WHERE id = ?", (team_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row[0]
+    else:
+        return None
 
 
 def get_team_name(team_id: int):

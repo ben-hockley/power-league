@@ -844,7 +844,7 @@ def get_passing_leaders(league_id: int):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT id, f_name, l_name, passing_stats_season
+        SELECT id, f_name, l_name, passing_stats_season, team_id, position
         FROM players
         WHERE league_id = ? AND passing_stats_season IS NOT NULL
         ORDER BY json_extract(passing_stats_season, '$.yards') DESC
@@ -856,7 +856,11 @@ def get_passing_leaders(league_id: int):
         f_name = row[1]
         l_name = row[2]
         stats = json.loads(row[3])
-        leaders.append((player_id, f"{f_name} {l_name}", stats.get('attempts', 0), stats.get('completions', 0), stats.get('yards', 0), stats.get('td', 0)))
+        team_id = row[4]
+        cur.execute("SELECT team_name FROM teams WHERE id = ?", (team_id,))
+        team_name = cur.fetchone()[0] if team_id else "Free Agent"
+        position = row[5]
+        leaders.append((player_id, f"{f_name} {l_name}", stats.get('attempts', 0), stats.get('completions', 0), stats.get('yards', 0), stats.get('td', 0), team_id, team_name, position))
     conn.close()
     return leaders
 
@@ -868,7 +872,7 @@ def get_rushing_leaders(league_id: int):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT id, f_name, l_name, rushing_stats_season
+        SELECT id, f_name, l_name, rushing_stats_season, team_id, position
         FROM players
         WHERE league_id = ? AND rushing_stats_season IS NOT NULL
         ORDER BY json_extract(rushing_stats_season, '$.yards') DESC
@@ -880,7 +884,11 @@ def get_rushing_leaders(league_id: int):
         f_name = row[1]
         l_name = row[2]
         stats = json.loads(row[3])
-        leaders.append((player_id, f"{f_name} {l_name}", stats.get('attempts', 0), stats.get('yards', 0), stats.get('td', 0)))
+        team_id = row[4]
+        cur.execute("SELECT team_name FROM teams WHERE id = ?", (team_id,))
+        team_name = cur.fetchone()[0] if team_id else "Free Agent"
+        position = row[5]
+        leaders.append((player_id, f"{f_name} {l_name}", stats.get('attempts', 0), stats.get('yards', 0), stats.get('td', 0), team_id, team_name, position))
     conn.close()
     return leaders
 
@@ -892,7 +900,7 @@ def get_receiving_leaders(league_id: int):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT id, f_name, l_name, receiving_stats_season
+        SELECT id, f_name, l_name, receiving_stats_season, team_id, position
         FROM players
         WHERE league_id = ? AND receiving_stats_season IS NOT NULL
         ORDER BY json_extract(receiving_stats_season, '$.yards') DESC
@@ -904,6 +912,10 @@ def get_receiving_leaders(league_id: int):
         f_name = row[1]
         l_name = row[2]
         stats = json.loads(row[3])
-        leaders.append((player_id, f"{f_name} {l_name}", stats.get('receptions', 0), stats.get('yards', 0), stats.get('td', 0)))
+        team_id = row[4]
+        cur.execute("SELECT team_name FROM teams WHERE id = ?", (team_id,))
+        team_name = cur.fetchone()[0] if team_id else "Free Agent"
+        position = row[5]
+        leaders.append((player_id, f"{f_name} {l_name}", stats.get('receptions', 0), stats.get('yards', 0), stats.get('td', 0), team_id, team_name, position))
     conn.close()
     return leaders

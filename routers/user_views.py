@@ -544,7 +544,9 @@ async def show_passing_leaders(request: Request, team_id: int, auth: bool = Depe
     league_id = get_team_league_id(team_id)
 
     leader_type = "passing"
-    leaders = get_passing_leaders(league_id)
+    leaders: list = get_passing_leaders(league_id)
+    leaders = sorted(leaders, key=lambda x: x[3], reverse=True) # sort by yards
+
     return templates.TemplateResponse(
         request,
         "stat_leaders.html",
@@ -564,6 +566,8 @@ async def show_rushing_leaders(request: Request, team_id: int, auth: bool = Depe
 
     leader_type = "rushing"
     leaders = get_rushing_leaders(league_id)
+    leaders = sorted(leaders, key=lambda x: x[3], reverse=True) # sort by yards
+
     return templates.TemplateResponse(
         request,
         "stat_leaders.html",
@@ -583,6 +587,8 @@ async def show_receiving_leaders(request: Request, team_id: int, auth: bool = De
 
     leader_type = "receiving"
     leaders = get_receiving_leaders(league_id)
+    leaders = sorted(leaders, key=lambda x: x[3], reverse=True) # sort by yards
+    
     return templates.TemplateResponse(
         request,
         "stat_leaders.html",
