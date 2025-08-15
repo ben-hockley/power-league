@@ -1,8 +1,3 @@
-
-
-
-
-
 '''
 The available time between draft picks in minutes and seconds.
 This setting is used to control the pacing of the draft process.

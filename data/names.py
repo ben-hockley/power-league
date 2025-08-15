@@ -1,5 +1,8 @@
 import random
 
+# Generate a random name made up of a first name and a last name.
+# Picks at random from a list of 100 common first and last names for American Football players.
+# 10000 possible names.
 first_names = [
     "James", "John", "Michael", "Chris", "David", "Robert", "Josh", "Matt", "Mike", "Kevin",
     "Jason", "Brian", "Brandon", "Eric", "Justin", "Ryan", "Anthony", "Alex", "Tyler", "Jordan",

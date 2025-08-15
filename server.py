@@ -164,6 +164,6 @@ if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
     scheduler.start()
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host=SERVER_HOST, port=8080, reload=True)
+    uvicorn.run("server:app", host=SERVER_HOST, port=8081, reload=True)
 
 # BEN HOCKLEY 2025

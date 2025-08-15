@@ -1,4 +1,6 @@
 import mariadb
+
+# get db details from untracked config file (for security reasons)
 from config import DB_USER, DB_PASSWORD, DB_HOST, DB_NAME
 
 
